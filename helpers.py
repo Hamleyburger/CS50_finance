@@ -1,5 +1,5 @@
 import os
-import requests
+#import requests
 import urllib.parse
 
 from flask import redirect, render_template, request, session
