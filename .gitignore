@@ -1,3 +1,4 @@
 config.py
 hash.py
 *.pyc
+venv/
