@@ -1,6 +1,6 @@
 from application import app
 from flask import session, request, redirect, render_template, flash, jsonify
-from .helpers import login_required, apology, lookup, usd, retrieveUser
+from .helpers import login_required, apology, lookup, usd, retrieveUser, createUser, clearSessionKeepFlash
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 
@@ -42,7 +42,7 @@ def login():
 	"""Log user in"""
 
 	# Forget any user_id
-	session.clear()
+	clearSessionKeepFlash()
 
 	# User reached route via POST (as by submitting a form via POST)
 	if request.method == "POST":
@@ -59,22 +59,24 @@ def login():
 		username = request.form.get("username")
 		password = request.form.get("password")
 
-		currentUser = retrieveUser(username)
-		currentUsername = currentUser[0]
-		currentHash = currentUser[1]
-		currentId = currentUser[2]
 
 		# Ensure username exists and password is correct
-		if currentUsername == username:
-			# Username exists, check password hash:
-			if check_password_hash(currentHash, password):
-				# Hash was correct - log user in
-				print("User can log in")
-				session["user_id"] = currentId
-			else:
-				# User exists but password is incorrect
-				print("Incorrect password")
-				return apology("invalid password", 403)
+		if retrieveUser(username):
+			currentUser = retrieveUser(username)
+			currentUsername = currentUser[0]
+			currentHash = currentUser[1]
+			currentId = currentUser[2]
+
+			if currentUsername == username:
+				# Username exists, check password hash:
+				if check_password_hash(currentHash, password):
+					# Hash was correct - log user in
+					print("User can log in")
+					session["user_id"] = currentId
+				else:
+					# User exists but password is incorrect
+					print("Incorrect password")
+					return apology("invalid password", 403)
 		else:
 			# User does not exist
 			print("user doesn't exist")
@@ -118,10 +120,51 @@ def quote():
 	return apology("TODO")
 
 
+
 @app.route("/register", methods=["GET", "POST"])
 def register():
-	"""Register user"""
-	return apology("TODO")
+	#Register user
+
+	# Forget anything user related
+	session.clear()
+
+	# User reached route via POST (as by submitting a form via POST)
+	if request.method == "POST":
+
+		form = request.form.get
+
+		# Ensure username was submitted
+		if not form("username"):
+			return apology("must provide username", 403)
+
+		# Ensure password was submitted
+		elif not form("password"):
+			return apology("must provide password", 403)
+
+		# Ensure password was confirmed
+		elif not form("password-confirm"):
+			return apology("must confirm password", 403)
+
+		# Ensure password confirmation matches
+		elif form("password") != form("password-confirm"):
+			return apology("Passwords didn't match", 403)
+
+		# Check if username is taken
+		if retrieveUser(form("username")) is not None:
+			return apology("username taken", 403)
+		else:
+			# Insert user and hashed password into database
+			username = form("username")
+			hash = generate_password_hash(form("password"))
+			createUser(username, hash)
+
+			flash("You were successfully registered")
+			return redirect("/login")
+
+	# User reached route via GET (as by clicking a link or via redirect)
+	else:
+		return render_template("register.html")
+
 
 
 @app.route("/sell", methods=["GET", "POST"])
