@@ -1,4 +1,8 @@
 config.py
 hash.py
+<<<<<<< HEAD
 *.pyc
 venv/
+=======
+*.pyc
+>>>>>>> 4780f34b2e3012d9ad36f8a822fb2bc807fad7e9
