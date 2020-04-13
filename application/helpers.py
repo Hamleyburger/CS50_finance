@@ -1,6 +1,7 @@
-import os
-#import requests
+from application import app
+import requests
 import urllib.parse
+import sqlite3
 
 from flask import redirect, render_template, request, session
 from functools import wraps
@@ -40,7 +41,7 @@ def lookup(symbol):
 
     # Contact API
     try:
-        api_key = os.environ.get("API_KEY")
+        api_key = app.config["API_KEY"]
         response = requests.get(f"https://cloud-sse.iexapis.com/stable/stock/{urllib.parse.quote_plus(symbol)}/quote?token={api_key}")
         response.raise_for_status()
     except requests.RequestException:
@@ -61,3 +62,25 @@ def lookup(symbol):
 def usd(value):
     """Format value as USD."""
     return f"${value:,.2f}"
+
+# set db with sqlite3 instead of cs50's SQL ("Configure CS50 Library to use SQLite database")
+def retrieveUsers():
+	con = sqlite3.connect("finance.db")
+	cur = con.cursor()
+	cur.execute("SELECT username, hash FROM users")
+	users = cur.fetchall()
+	con.close()
+	return users
+
+def retrieveUser(username):
+	con = sqlite3.connect("finance.db")
+	cur = con.cursor()
+	cur.execute('SELECT username, hash, id FROM users WHERE username=?', (username,))
+	users = cur.fetchall()
+	con.close()
+
+	if not users:
+		print("no such user")
+		return "user does not exist"
+	else:
+		return users[0]
