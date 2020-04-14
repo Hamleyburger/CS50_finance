@@ -1,7 +1,11 @@
 from application import app
 import requests
 import urllib.parse
+
+# for handing database
 import sqlite3
+# for handling passwords (with database)
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from flask import redirect, render_template, request, session
 from functools import wraps
@@ -64,6 +68,8 @@ def usd(value):
 	return f"${value:,.2f}"
 
 # set db with sqlite3 instead of cs50's SQL ("Configure CS50 Library to use SQLite database")
+
+# Retrieve a list of all users
 def retrieveUsers():
 	con = sqlite3.connect("finance.db")
 	cur = con.cursor()
@@ -85,12 +91,36 @@ def retrieveUser(username):
 	else:
 		return users[0]
 
-def createUser(username, hash):
+def userVerified(username, password):
+	# Ensure username exists and password is correct
+	if retrieveUser(username):
+		currentUser = retrieveUser(username)
+		currentHash = currentUser[1]
+		currentId = currentUser[2]
+
+		# Username exists, check password hash:
+		if check_password_hash(currentHash, password):
+			# Hash was correct - log user in
+			print("User can log in")
+			session["user_id"] = currentId
+			return True
+		else:
+			# User exists but password is incorrect
+			print("Incorrect password")
+			return False
+	else:
+		# User does not exist
+		print("user doesn't exist")
+		return False
+
+
+
+def createUser(username, password):
 	# Insert user and hashed password into database
 	#db.execute("INSERT INTO users (username,hash) VALUES (?, ?)", form("username"), generate_password_hash(form("password")))
 	con = sqlite3.connect("finance.db")
 	cur = con.cursor()
-	cur.execute("INSERT INTO users (username,hash) VALUES (?, ?)", (username, hash))
+	cur.execute("INSERT INTO users (username,hash) VALUES (?, ?)", (username, generate_password_hash(password)))
 	#users = cur.fetchall()
 	con.commit()
 	con.close()

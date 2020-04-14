@@ -1,7 +1,6 @@
 from application import app
 from flask import session, request, redirect, render_template, flash, jsonify
-from .helpers import login_required, apology, lookup, usd, retrieveUser, createUser, clearSessionKeepFlash
-from werkzeug.security import check_password_hash, generate_password_hash
+from .helpers import login_required, apology, lookup, usd, retrieveUser, createUser, clearSessionKeepFlash, userVerified
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 
 # Custom filter (this gives an error so I'm commenting it out for now)
@@ -59,43 +58,14 @@ def login():
 		username = request.form.get("username")
 		password = request.form.get("password")
 
-
-		# Ensure username exists and password is correct
-		if retrieveUser(username):
-			currentUser = retrieveUser(username)
-			currentUsername = currentUser[0]
-			currentHash = currentUser[1]
-			currentId = currentUser[2]
-
-			if currentUsername == username:
-				# Username exists, check password hash:
-				if check_password_hash(currentHash, password):
-					# Hash was correct - log user in
-					print("User can log in")
-					session["user_id"] = currentId
-				else:
-					# User exists but password is incorrect
-					print("Incorrect password")
-					return apology("invalid password", 403)
+		if userVerified(username, password):
+			# Redirect user to home page
+			return redirect("/")
 		else:
-			# User does not exist
-			print("user doesn't exist")
-			return apology("invalid username", 403)
+			return apology("invalid username or password", 403)
 
 		# for debugging
 		print(session)
-		
-		"""
-		CS50's way of doing it with CS50's SQL library:
-		if len(rows) != 1 or not check_password_hash(rows[0]["hash"], request.form.get("password")):
-			return apology("invalid username and/or password", 403)
-
-		# Remember which user has logged in
-		#session["user_id"] = rows[0]["id"]
-		"""
-
-		# Redirect user to home page
-		return redirect("/")
 
 	# User reached route via GET (as by clicking a link or via redirect)
 	else:
@@ -150,13 +120,11 @@ def register():
 			return apology("Passwords didn't match", 403)
 
 		# Check if username is taken
-		if retrieveUser(form("username")) is not None:
+		if retrieveUser(form("username")):
 			return apology("username taken", 403)
 		else:
 			# Insert user and hashed password into database
-			username = form("username")
-			hash = generate_password_hash(form("password"))
-			createUser(username, hash)
+			createUser(form("username"), form("password"))
 
 			flash("You were successfully registered")
 			return redirect("/login")
