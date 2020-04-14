@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Quote
+{% endblock %}
+
+{% block main %}
+    <form action="/quote" method="post">
+        <div class="form-group">
+            <input autocomplete="off" autofocus class="form-control" name="symbol" placeholder="stock symbol" type="text">
+        </div>
+        <button class="btn btn-primary" type="submit">Get quote</button>
+    </form>
+
+{% if quoteDict == "" %}
+<!-- Nothing to see here. -->
+{% else %}
+    <div class="container pt-5">
+        <div class="table-responsive">
+            <table id="jstable" class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">Name</th>
+                        <th scope="col">Price</th>
+                        <th scope="col">Symbol</th>
+                        <th scope="col">Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{ quoteDict["name"] }}</td>
+                        <td>{{ quoteDict["price"] }}</td>
+                        <td>{{ quoteDict["symbol"] }}</td>
+                        <td id="timeStamp"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+		// moment library needs to be imported (in base template):
+		// "https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"
+        var currentTime = moment.parseZone('{{ quoteDict["isotime"]|safe }}').local().format("lll");
+        document.getElementById("timeStamp").innerHTML = currentTime;
+    </script>
+{% endif %}
+
+
+{% endblock %}

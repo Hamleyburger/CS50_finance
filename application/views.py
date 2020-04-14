@@ -83,11 +83,18 @@ def logout():
 	return redirect("/")
 
 
+
 @app.route("/quote", methods=["GET", "POST"])
 @login_required
 def quote():
-	"""Get stock quote."""
-	return apology("TODO")
+    """Get stock quote."""
+    if request.method == "POST":
+        # lookup returns a Python dict:
+        quoteDict = lookup(request.form.get("symbol"))
+
+        return render_template("/quote.html", quoteDict=quoteDict)
+    else:
+        return render_template("/quote.html", quoteDict="")
 
 
 
