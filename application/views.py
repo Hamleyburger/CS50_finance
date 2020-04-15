@@ -87,14 +87,18 @@ def logout():
 @app.route("/quote", methods=["GET", "POST"])
 @login_required
 def quote():
-    """Get stock quote."""
-    if request.method == "POST":
-        # lookup returns a Python dict:
-        quoteDict = lookup(request.form.get("symbol"))
+	"""Get stock quote."""
+	if request.method == "POST":
+		# lookup returns a Python dict:
+		quoteDict = lookup(request.form.get("symbol"))
 
-        return render_template("/quote.html", quoteDict=quoteDict)
-    else:
-        return render_template("/quote.html", quoteDict="")
+		if quoteDict:
+			return render_template("/quote.html", quoteDict=quoteDict)
+		else:
+			flash(u"Could not find stock symbol in database", "danger")
+			return redirect(request.url)
+	else:
+		return render_template("/quote.html", quoteDict="")
 
 
 
@@ -133,7 +137,7 @@ def register():
 			# Insert user and hashed password into database
 			createUser(form("username"), form("password"))
 
-			flash("You were successfully registered")
+			flash(u"You were successfully registered", "success")
 			return redirect("/login")
 
 	# User reached route via GET (as by clicking a link or via redirect)

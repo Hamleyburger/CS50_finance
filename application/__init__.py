@@ -5,6 +5,7 @@ from flask import Flask
 # pip uninstalled werkzeug and pip installed werkzeug==0.16.0
 from flask_session import Session
 from flask_debugtoolbar import DebugToolbarExtension
+from flask_sqlalchemy import SQLAlchemy
 
 
 
@@ -18,7 +19,9 @@ app.config.from_object("config.DevelopmentConfig")
 Session(app)
 # Instantiate debug toolbar
 debugToolbar = DebugToolbarExtension(app)
-print(app.config)
+
+# Instantiate SQLAlchemy
+db = SQLAlchemy(app)
 
 # Views.py must be imported AFTER instantiating the app. Otherwise circular import problems
 from application import views

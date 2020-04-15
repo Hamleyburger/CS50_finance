@@ -11,6 +11,8 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from flask import redirect, render_template, request, session
 from functools import wraps
 
+# Until I figure out how to use sqlalchemy I need this dbPath to set path to db
+dbPath = app.config["DB_PATH"]
 
 def apology(message, code=400):
 	"""Render message as an apology to user."""
@@ -43,29 +45,30 @@ def login_required(f):
 
 # Changed lookup to also return UTC time stamp in isoformat: ["isotime"]
 def lookup(symbol):
-    """Look up quote for symbol."""
+	"""Look up quote for symbol."""
 
-    # Contact API
-    try:
-        api_key = app.config["API_KEY"]
-        response = requests.get(f"https://cloud-sse.iexapis.com/stable/stock/{urllib.parse.quote_plus(symbol)}/quote?token={api_key}")
-        response.raise_for_status()
-    except requests.RequestException:
-        return None
+	# Contact API
+	try:
+		api_key = app.config["API_KEY"]
+		response = requests.get(f"https://cloud-sse.iexapis.com/stable/stock/{urllib.parse.quote_plus(symbol)}/quote?token={api_key}")
+		response.raise_for_status()
+	except requests.RequestException:
+		return None
 
-    # Parse response
-    try:
+	# Parse response
+	try:
 
-        quote = response.json()
-		# Returns a dict
-        return {
-            "name": quote["companyName"],
-            "price": float(quote["latestPrice"]),
-            "symbol": quote["symbol"],
-            "isotime": datetime.datetime.utcnow().isoformat()
-        }
-    except (KeyError, TypeError, ValueError):
-        return None
+		quote = response.json()
+
+		return {
+			"name": quote["companyName"],
+			"price": float(quote["latestPrice"]),
+			"symbol": quote["symbol"],
+			"isotime": datetime.datetime.utcnow().isoformat()
+		}
+
+	except (KeyError, TypeError, ValueError):
+		return None
 
 
 def usd(value):
@@ -76,7 +79,7 @@ def usd(value):
 
 # Retrieve a list of all users
 def retrieveUsers():
-	con = sqlite3.connect("finance.db")
+	con = sqlite3.connect(dbPath)
 	cur = con.cursor()
 	cur.execute("SELECT username, hash FROM users")
 	users = cur.fetchall()
@@ -84,7 +87,7 @@ def retrieveUsers():
 	return users
 
 def retrieveUser(username):
-	con = sqlite3.connect("finance.db")
+	con = sqlite3.connect(dbPath)
 	cur = con.cursor()
 	cur.execute('SELECT username, hash, id FROM users WHERE username=?', (username,))
 	users = cur.fetchall()
@@ -123,7 +126,7 @@ def userVerified(username, password):
 def createUser(username, password):
 	# Insert user and hashed password into database
 	#db.execute("INSERT INTO users (username,hash) VALUES (?, ?)", form("username"), generate_password_hash(form("password")))
-	con = sqlite3.connect("finance.db")
+	con = sqlite3.connect(dbPath)
 	cur = con.cursor()
 	cur.execute("INSERT INTO users (username,hash) VALUES (?, ?)", (username, generate_password_hash(password)))
 	#users = cur.fetchall()

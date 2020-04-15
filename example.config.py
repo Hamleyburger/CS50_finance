@@ -23,7 +23,9 @@ class ProductionConfig(Config):
     DEBUG = 0
 
 class DevelopmentConfig(Config):
-    pass
+	DB_PATH = "a direct path to the db file for using with sqlite3 until sqlalchemy is fully implemented"
+	SQLALCHEMY_DATABASE_URI = "sqlite:////absolute path"
+	SQLALCHEMY_TRACK_MODIFICATIONS = False
 class TestingConfig(Config):
     pass
 
