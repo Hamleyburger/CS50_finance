@@ -8,12 +8,13 @@ from flask_debugtoolbar import DebugToolbarExtension
 from flask_sqlalchemy import SQLAlchemy
 
 
-
 # Configure application
 app = Flask(__name__)
 
+
 # All configs are taken from object in config.py
 app.config.from_object("config.DevelopmentConfig")
+
 
 # Instantiate Session
 Session(app)
@@ -25,6 +26,7 @@ db = SQLAlchemy(app)
 
 # Views.py must be imported AFTER instantiating the app. Otherwise circular import problems
 from application import views
+
 
 
 

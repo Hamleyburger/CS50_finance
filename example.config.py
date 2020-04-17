@@ -5,7 +5,7 @@ from tempfile import mkdtemp
 
 class Config(object):
     DEBUG=1
-	# intercepting redirects can be set to true for debugging in browser at runtime
+    # intercepting redirects can be set to true for debugging in browser at runtime
     DEBUG_TB_INTERCEPT_REDIRECTS = True
     SECRET_KEY="MAKE A SUPER SECRET KEY"
     API_KEY="GET YOUR API KEY FROM IEX CLOUD"
@@ -23,9 +23,9 @@ class ProductionConfig(Config):
     DEBUG = 0
 
 class DevelopmentConfig(Config):
-	DB_PATH = "a direct path to the db file for using with sqlite3 until sqlalchemy is fully implemented"
-	SQLALCHEMY_DATABASE_URI = "sqlite:////absolute path"
-	SQLALCHEMY_TRACK_MODIFICATIONS = False
+    DB_PATH = "a direct path to the db file for using with sqlite3 until sqlalchemy is fully implemented"
+    SQLALCHEMY_DATABASE_URI = "sqlite:////absolute path"
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
 class TestingConfig(Config):
     pass
 

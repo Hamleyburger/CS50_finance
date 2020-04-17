@@ -39,8 +39,8 @@
     </div>
 
     <script>
-		// moment library needs to be imported (in base template):
-		// "https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"
+        // moment library needs to be imported (in base template):
+        // "https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"
         var currentTime = moment.parseZone('{{ quoteDict["isotime"]|safe }}').local().format("lll");
         document.getElementById("timeStamp").innerHTML = currentTime;
     </script>
