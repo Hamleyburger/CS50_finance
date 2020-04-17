@@ -18,8 +18,8 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(), nullable=False)
     hash = db.Column(db.String(), nullable=False)
-    # server_default sets actual default value in database. If ONLY ORM is used to
-    # communicate with the db, setting default is enough.
+    # server_default sets actual default value in database. If ONLY ORM is
+    # used to communicate with the db, setting default is enough.
     # server_default does not take a plain number, sp use db.text() to set it
     cash = db.Column(db.Numeric, nullable=False,
                      server_default=db.text('10000.00'))

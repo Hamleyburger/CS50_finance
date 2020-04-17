@@ -11,9 +11,6 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from flask import redirect, render_template, request, session
 from functools import wraps
 
-# Until I figure out how to use sqlalchemy I need this dbPath to set path to db
-dbPath = app.config["DB_PATH"]
-
 
 def apology(message, code=400):
     """Render message as an apology to user."""

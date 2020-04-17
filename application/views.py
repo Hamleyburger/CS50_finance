@@ -86,7 +86,6 @@ def logout():
     return redirect("/")
 
 
-
 @app.route("/quote", methods=["GET", "POST"])
 @login_required
 def quote():
@@ -104,11 +103,9 @@ def quote():
         return render_template("/quote.html", quoteDict="")
 
 
-
 @app.route("/register", methods=["GET", "POST"])
 def register():
-    #Register user
-
+    # Register user
     # Forget anything user related
     session.clear()
 
@@ -146,7 +143,6 @@ def register():
     # User reached route via GET (as by clicking a link or via redirect)
     else:
         return render_template("register.html")
-
 
 
 @app.route("/sell", methods=["GET", "POST"])
