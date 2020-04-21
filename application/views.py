@@ -29,53 +29,61 @@ def index():
 @app.route("/buy", methods=["GET", "POST"])
 @login_required
 def buy():
-
+    print("beginning of buy function")
     user = User.query.filter_by(id=session["user_id"]).first_or_404()
     cash = user.cash
     
     if request.method == "POST":
 
         # if POST: try to get dict with lookup:
-        stockDict = lookup(request.form.get("symbol"))
+        
+        stockDict = ""
+        if "buystock" not in session:
+            print("buystock not in session, now ''")
+            session["buystock"] = ""
+        else:
+            if "symbol" in session["buystock"]:
+                print("symbol exists. Refreshing stockDict")
+                stockDict = lookup(session["buystock"]["symbol"])
+
         if "stockamount" not in session:
             print("stockamount not in session")
             session["stockamount"] = 0
             print("stockamount was None, now it's {}".format(session["stockamount"]))
 
-        # if dict has been returned, do something with it, otherwise flash "error"
-        if stockDict:
 
-            # Since dict exists we will have gotten a "name"
-            stockName = stockDict["name"]
-
-            # We have three submit-button - "search" and "buy" and "refresh":
-            if request.form.get("submit-button") == "search":
-                # User searched for a stock
-                flash(u"You searched for {}".format(stockName), "success")
-                if stockDict:
-                    print("stockDict extsts: {}".format(stockDict))
-                    session["buystock"] = stockDict
-                print("you now wish to buy {} {}".format(session["stockamount"], session["buystock"]))
-                return render_template("/buy.html", stockDict=stockDict)
-            elif request.form.get("submit-button") == "refresh":
-                # User refreshed price
-                flash(u"You refreshed price for {}".format(stockName), "success")
-                session["stockamount"] = request.form.get("amount")
-                print("you now wish to buy {} {}".format(session["stockamount"], session["buystock"]))
-                return render_template("/buy.html", stockDict=stockDict)
+        # We have three submit-button - "search" and "buy" and "refresh":
+        if request.form.get("submit-button") == "search":
+            # User searched for a stock. Lookup returns None if stock symbol exists in API
+            search = lookup(request.form.get("symbol"))
+            if search:
+                # if lookup returned a dict assign it to session
+                if session["buystock"] != search:
+                    # User searched new stock symbol. Reset stock to buy and amount
+                    stockDict = search
+                    session["stockamount"] = 0
             else:
-                # User decided to buy a stock
-                print("you bought {} items of {}".format(session["stockamount"], session["buystock"]))
-                return redirect(request.url)
-
-        # user typed invalid symbol - flashing "error"
+                # user typed invalid symbol - flashing "error"
+                flash(u"Could not find stock symbol in database", "danger")
+                                
+        elif request.form.get("submit-button") == "refresh":
+            # User refreshed price. Should only work if buystock has a symbol
+            flash(u"You refreshed price and amount for {}".format(session["buystock"]["name"]), "success")
+            session["stockamount"] = request.form.get("amount")
+            session["buystock"] = stockDict
+            print("you now wish to buy {} {}".format(session["stockamount"], session["buystock"]))
         else:
-            flash(u"Could not find stock symbol in database", "danger")
-            return redirect(request.url)
+            # User decided to buy a stock
+            print("User has cash: {:.2f} and wants to buy for {:.2f}".format(cash, float(session["buystock"]["price"]) * float(session["stockamount"])))
+            print("you bought {} items of {}".format(session["stockamount"], session["buystock"]))
+
+        session["buystock"] = stockDict
+        return redirect(request.url)
+
     # method is get
     else:
         print("ur username is {}".format(user.username))
-        return render_template("/buy.html", stockDict="")
+        return render_template("/buy.html")
 
 
 @app.route("/history")
