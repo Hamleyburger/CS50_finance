@@ -1,8 +1,8 @@
-from application import app
+from application import app, db
 from flask import session, request, redirect, render_template, flash, jsonify
 from .helpers import login_required, apology, lookup, usd, getUser, \
     clearSessionKeepFlash, userVerified, createUser
-from .models import User
+from .models import User, Stock, Owned
 from werkzeug.exceptions import default_exceptions, HTTPException, \
     InternalServerError
 
@@ -48,7 +48,7 @@ def buy():
 
         if "stockamount" not in session:
             print("stockamount not in session")
-            session["stockamount"] = 0
+            session["stockamount"] = 1
             print("stockamount was None, now it's {}".format(session["stockamount"]))
 
 
@@ -61,7 +61,7 @@ def buy():
                 if session["buystock"] != search:
                     # User searched new stock symbol. Reset stock to buy and amount
                     stockDict = search
-                    session["stockamount"] = 0
+                    session["stockamount"] = 1
             else:
                 # user typed invalid symbol - flashing "error"
                 flash(u"Could not find stock symbol in database", "danger")
@@ -75,9 +75,17 @@ def buy():
         else:
             # User decided to buy a stock
             print("User has cash: {:.2f} and wants to buy for {:.2f}".format(cash, float(session["buystock"]["price"]) * float(session["stockamount"])))
-            print("you bought {} items of {}".format(session["stockamount"], session["buystock"]))
+            exists = Stock.query.filter_by(name=session["buystock"]["symbol"]).first()
+            if not exists:
+                stock = Stock(symbol=session["buystock"]["symbol"], name=session["buystock"]["name"])
+                db.session.add(stock)
+                db.session.commit()
 
         session["buystock"] = stockDict
+
+        if (float(session["stockamount"]) > 0) and ("price" in session["buystock"]):
+            session["buytotal"] = float(session["stockamount"]) * float(session["buystock"]["price"])
+            
         return redirect(request.url)
 
     # method is get

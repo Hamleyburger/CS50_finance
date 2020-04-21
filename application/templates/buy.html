@@ -39,15 +39,15 @@
                         <small>{{ buyDict["symbol"] }}</small>
                     </h4>
                 </div>
-                <div class="col-12 col-sm-12 text-sm-center col-md-6 text-md-right row ml-0">
+                <div class="col-12 col-sm-12 text-sm-center col-md-6 text-md-right row">
                     <div class="xspadding col-5 col-sm-5 col-md-6 text-md-right" style="padding-top: 5px">
                         <h6><strong>{{ buyDict["price"] }} <span class="text-muted">x</span></strong></h6>
                     </div>
                     <div class="xspadding col-7 col-sm-7 col-md-6 text-md-right">
-                        <div class="quantity">
+                        <div class="quantity input-group">
                             <input type="number" step="1" max="99" min="0" value="{{ session['stockamount'] }}" title="Qty" class="qty"
                                    size="4" name="amount">
-                            <button type="submit" name="submit-button" value="refresh" class="btn btn-secondary"><i class="fas fa-sync-alt"></i></button>
+                            <button type="submit" name="submit-button" value="refresh" class="btn input-group-btn btn-secondary"><i class="fas fa-sync-alt"></i></button>
 
                         </div>
                     </div>
@@ -62,7 +62,11 @@
             <div class="pull-right" style="margin: 10px">
                 <button class="btn btn-primary" type="submit" name="submit-button" value="buy">Buy</button>
                 <div class="pull-right" style="margin: 5px">
-                    Total price: <b>50.00€</b>
+                    Total price: <b>
+                    {% if "buytotal" in session %}
+                        {{ "$%.2f"|format(session["buytotal"]) }}
+                    {% endif %}
+                    </b>
                 </div>
             </div>
         </div>
