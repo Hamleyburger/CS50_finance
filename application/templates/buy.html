@@ -1,0 +1,78 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Buy
+{% endblock %}
+
+{% block main %}
+
+
+
+<div>
+    <form action="/buy" method="post">
+        <! –– search bar ––>
+        <div class="input-group">
+            <input type="text" class="form-control" placeholder="Stock symbol" name="symbol" autofocus autocomplete="off">
+            <div class="input-group-btn">
+                <button class="btn btn-default formborder" type="submit" name="submit-button" value="search">
+                <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+
+
+        
+        
+        {% if "buystock" not in session %}
+
+        <!-- Nothing to see here. -->
+        {% else %}
+        
+        <div class="card-body">
+
+            <!-- PRODUCT -->
+            <div class="row justify-content-between">
+                <div class="col-12 text-sm-center col-sm-12 text-md-left col-md-6">
+                    <h4 class="product-name"><strong>{{ stockDict["name"] }}</strong></h4>
+                    <h4>
+                        <small>{{ stockDict["symbol"] }}</small>
+                    </h4>
+                </div>
+                <div class="col-12 col-sm-12 text-sm-center col-md-6 text-md-right row ml-0">
+                    <div class="xspadding col-5 col-sm-5 col-md-6 text-md-right" style="padding-top: 5px">
+                        <h6><strong>{{ stockDict["price"] }} <span class="text-muted">x</span></strong></h6>
+                    </div>
+                    <div class="xspadding col-7 col-sm-7 col-md-6 text-md-right">
+                        <div class="quantity">
+                            <input type="number" step="1" max="99" min="0" value="{{ session['buyamount'] }}" title="Qty" class="qty"
+                                   size="4" name="amount">
+                            <button type="submit" name="submit-button" value="refresh" class="btn btn-secondary"><i class="fas fa-sync-alt"></i></button>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <!-- END PRODUCT -->
+            
+        </div>
+        <div class="card-footer">
+            
+            <div class="pull-right" style="margin: 10px">
+                <button class="btn btn-primary" type="submit" name="submit-button" value="buy">Buy</button>
+                <div class="pull-right" style="margin: 5px">
+                    Total price: <b>50.00€</b>
+                </div>
+            </div>
+        </div>
+
+
+        {% endif %}
+
+
+    </form>
+</div>
+        
+        
+        
+{% endblock %}

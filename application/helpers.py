@@ -5,7 +5,7 @@ import datetime
 from .models import User
 
 # for handling passwords (with database)
-from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.security import check_password_hash
 
 
 from flask import redirect, render_template, request, session
@@ -75,18 +75,12 @@ def usd(value):
     return f"${value:,.2f}"
 
 
-# Retrieve a list of all users
-def retrieveUsers():
-    users = User.query.all()
-    return users
-
-
-def retrieveUser(username):
+def getUser(username):
 
     user = User.query.filter_by(username=username).first()
 
     if not user:
-        print("retrieveUser: query returned None")
+        print("getUser: query returned None")
         return None
     else:
         return user
@@ -94,16 +88,14 @@ def retrieveUser(username):
 
 def userVerified(username, password):
     # Ensure username exists and password is correct
-    if retrieveUser(username):
-        currentUser = retrieveUser(username)
-        currentHash = currentUser.hash
-        currentId = currentUser.id
+    if getUser(username):
+        user = getUser(username)
 
         # Username exists, check password hash:
-        if check_password_hash(currentHash, password):
+        if check_password_hash(user.hash, password):
             # Hash was correct - log user in
             print("userVerified: hash and password match!")
-            session["user_id"] = currentId
+            session["user_id"] = user.id
             return True
         else:
             # User exists but password is incorrect
@@ -111,17 +103,12 @@ def userVerified(username, password):
             return False
     else:
         # User does not exist
-        print("userVerified: retrieveUser returned None")
+        print("userVerified: getUser returned None")
         return False
 
 
 def createUser(username, password):
-    # Insert user and hashed password into database
-    hash = generate_password_hash(password)
-    user = User(username=username,
-                hash=hash)
-    db.session.add(user)
-    db.session.commit()
+    User.create(username, password)
 
 
 def clearSessionKeepFlash():

@@ -1,5 +1,6 @@
 from application import db
 import datetime
+from werkzeug.security import generate_password_hash
 
 
 """
@@ -24,10 +25,18 @@ class User(db.Model):
     cash = db.Column(db.Numeric, nullable=False,
                      server_default=db.text('10000.00'))
 
-    # One-to-many relationshipa
+    # One-to-many relationships
     sales = db.relationship("Sales", backref="user", lazy=True)
     purchases = db.relationship("Purchases", backref="user", lazy=True)
     stocks = db.relationship("Owned", backref="user", lazy=True)
+
+    def create(username, password):
+        # Insert user and hashed password into database
+        hash = generate_password_hash(password)
+        user = User(username=username,
+                    hash=hash)
+        db.session.add(user)
+        db.session.commit()
 
 
 class Stock(db.Model):

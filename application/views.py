@@ -1,7 +1,8 @@
 from application import app
 from flask import session, request, redirect, render_template, flash, jsonify
-from .helpers import login_required, apology, lookup, usd, retrieveUser, \
-    createUser, clearSessionKeepFlash, userVerified
+from .helpers import login_required, apology, lookup, usd, getUser, \
+    clearSessionKeepFlash, userVerified, createUser
+from .models import User
 from werkzeug.exceptions import default_exceptions, HTTPException, \
     InternalServerError
 
@@ -28,8 +29,53 @@ def index():
 @app.route("/buy", methods=["GET", "POST"])
 @login_required
 def buy():
-    """Buy shares of stock"""
-    return apology("TODO")
+
+    user = User.query.filter_by(id=session["user_id"]).first_or_404()
+    cash = user.cash
+    
+    if request.method == "POST":
+
+        # if POST: try to get dict with lookup:
+        stockDict = lookup(request.form.get("symbol"))
+        if "stockamount" not in session:
+            print("stockamount not in session")
+            session["stockamount"] = 0
+            print("stockamount was None, now it's {}".format(session["stockamount"]))
+
+        # if dict has been returned, do something with it, otherwise flash "error"
+        if stockDict:
+
+            # Since dict exists we will have gotten a "name"
+            stockName = stockDict["name"]
+
+            # We have three submit-button - "search" and "buy" and "refresh":
+            if request.form.get("submit-button") == "search":
+                # User searched for a stock
+                flash(u"You searched for {}".format(stockName), "success")
+                if stockDict:
+                    print("stockDict extsts: {}".format(stockDict))
+                    session["buystock"] = stockDict
+                print("you now wish to buy {} {}".format(session["stockamount"], session["buystock"]))
+                return render_template("/buy.html", stockDict=stockDict)
+            elif request.form.get("submit-button") == "refresh":
+                # User refreshed price
+                flash(u"You refreshed price for {}".format(stockName), "success")
+                session["stockamount"] = request.form.get("amount")
+                print("you now wish to buy {} {}".format(session["stockamount"], session["buystock"]))
+                return render_template("/buy.html", stockDict=stockDict)
+            else:
+                # User decided to buy a stock
+                print("you bought {} items of {}".format(session["stockamount"], session["buystock"]))
+                return redirect(request.url)
+
+        # user typed invalid symbol - flashing "error"
+        else:
+            flash(u"Could not find stock symbol in database", "danger")
+            return redirect(request.url)
+    # method is get
+    else:
+        print("ur username is {}".format(user.username))
+        return render_template("/buy.html", stockDict="")
 
 
 @app.route("/history")
@@ -62,6 +108,7 @@ def login():
         password = request.form.get("password")
 
         if userVerified(username, password):
+            session["user_id"] = userVerified(username, password)
             # Redirect user to home page
             return redirect("/")
         else:
@@ -131,7 +178,7 @@ def register():
             return apology("Passwords didn't match", 403)
 
         # Check if username is taken
-        if retrieveUser(form("username")):
+        if getUser(form("username")):
             return apology("username taken", 403)
         else:
             # Insert user and hashed password into database
