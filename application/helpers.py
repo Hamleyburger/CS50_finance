@@ -8,7 +8,7 @@ from .models import User
 from werkzeug.security import check_password_hash
 
 
-from flask import redirect, render_template, request, session
+from flask import redirect, render_template, request, session, flash
 from functools import wraps
 
 
@@ -119,3 +119,42 @@ def clearSessionKeepFlash():
         session["_flashes"] = flashes
     else:
         session.clear()
+
+
+def setSessionStock(keyString, symbol=None, amount=None):
+    """
+    using lookup
+    instantiate stock info in session if none
+    refresh info and maintain amount if same
+    refresh info and reset amount if new
+    "keyString" is the session key
+    """
+
+    if keyString not in session:
+        # if key not in session, make it exist to be searchable
+        session[keyString] = {}
+        session[keyString]["amount"] = 1
+    if symbol:
+        if lookup(symbol):
+            if "symbol" in session["buystock"]:
+                if session["buystock"]["symbol"].lower() != symbol.lower():
+                    # if it's a different symbol from before, amount is 1
+                    amount = 1
+        # try to refresh session with new data from lookup
+        lookupRepopulate(session[keyString], symbol)
+    # No symbol was passed in. Refresh currect info if exists
+    elif "symbol" in session[keyString]:
+        symbol = session[keyString]["symbol"]
+        lookupRepopulate(session[keyString], symbol)
+
+    if amount:
+        session[keyString]["amount"] = amount
+
+
+def lookupRepopulate(receivingDict, symbol):
+    # repopulates keys returned from lookup and leaves the rest be
+    if lookup(symbol):
+        for newKey, newValue in lookup(symbol).items():
+            receivingDict[newKey] = newValue
+    else:
+        flash(u"Could not find stock symbol in database", "danger")

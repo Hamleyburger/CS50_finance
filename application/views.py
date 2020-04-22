@@ -1,8 +1,8 @@
-from application import app, db
+from application import app
 from flask import session, request, redirect, render_template, flash, jsonify
 from .helpers import login_required, apology, lookup, usd, getUser, \
-    clearSessionKeepFlash, userVerified, createUser
-from .models import User, Stock, Owned
+    clearSessionKeepFlash, userVerified, createUser, setSessionStock, lookupRepopulate
+from .models import User
 from werkzeug.exceptions import default_exceptions, HTTPException, \
     InternalServerError
 
@@ -29,68 +29,45 @@ def index():
 @app.route("/buy", methods=["GET", "POST"])
 @login_required
 def buy():
-    print("beginning of buy function")
-    user = User.query.filter_by(id=session["user_id"]).first_or_404()
-    cash = user.cash
-    
+
     if request.method == "POST":
 
-        # if POST: try to get dict with lookup:
-        
-        stockDict = ""
-        if "buystock" not in session:
-            print("buystock not in session, now ''")
-            session["buystock"] = ""
-        else:
-            if "symbol" in session["buystock"]:
-                print("symbol exists. Refreshing stockDict")
-                stockDict = lookup(session["buystock"]["symbol"])
+        user = User.query.filter_by(id=session["user_id"]).first_or_404()
+        print("Hello, {}. I will be handling your data".format(user.username))
+        cash = user.cash
+        # action can be search, refresh (amount) or buy
+        action = request.form.get("submit-button")
+        # setSessionStock initiates or refreshes session stock info
+        setSessionStock("buystock")
 
-        if "stockamount" not in session:
-            print("stockamount not in session")
-            session["stockamount"] = 1
-            print("stockamount was None, now it's {}".format(session["stockamount"]))
+        # SEARCH
+        if action == "search":
 
+            symbol = request.form.get("symbol")
+            # helpers.sesSessionStock refreshes session if symbol is valid,
+            # sets amount to 1 if symbol is different from previous
+            # and instantiates stock info dictionary if it doesn't exist
+            setSessionStock("buystock", symbol)
 
-        # We have three submit-button - "search" and "buy" and "refresh":
-        if request.form.get("submit-button") == "search":
-            # User searched for a stock. Lookup returns None if stock symbol exists in API
-            search = lookup(request.form.get("symbol"))
-            if search:
-                # if lookup returned a dict assign it to session
-                if session["buystock"] != search:
-                    # User searched new stock symbol. Reset stock to buy and amount
-                    stockDict = search
-                    session["stockamount"] = 1
-            else:
-                # user typed invalid symbol - flashing "error"
-                flash(u"Could not find stock symbol in database", "danger")
-                                
-        elif request.form.get("submit-button") == "refresh":
+        # REFRESH
+        elif action == "refresh":
             # User refreshed price. Should only work if buystock has a symbol
-            flash(u"You refreshed price and amount for {}".format(session["buystock"]["name"]), "success")
-            session["stockamount"] = request.form.get("amount")
-            session["buystock"] = stockDict
-            print("you now wish to buy {} {}".format(session["stockamount"], session["buystock"]))
+            setSessionStock("buystock", amount=request.form.get("amount"))
+
+        # BUY
         else:
             # User decided to buy a stock
-            print("User has cash: {:.2f} and wants to buy for {:.2f}".format(cash, float(session["buystock"]["price"]) * float(session["stockamount"])))
-            exists = Stock.query.filter_by(name=session["buystock"]["symbol"]).first()
-            if not exists:
-                stock = Stock(symbol=session["buystock"]["symbol"], name=session["buystock"]["name"])
-                db.session.add(stock)
-                db.session.commit()
+            print("User has cash: {:.2f} and wants to buy for {:.2f}".format(
+                cash, float(session["buystock"]["price"]) * float(session["buystock"]["amount"])))
 
-        session["buystock"] = stockDict
+        if (float(session["buystock"]["amount"]) > 0) and ("price" in session["buystock"]):
+            session["buytotal"] = float(
+                session["buystock"]["amount"]) * float(session["buystock"]["price"])
 
-        if (float(session["stockamount"]) > 0) and ("price" in session["buystock"]):
-            session["buytotal"] = float(session["stockamount"]) * float(session["buystock"]["price"])
-            
         return redirect(request.url)
 
     # method is get
     else:
-        print("ur username is {}".format(user.username))
         return render_template("/buy.html")
 
 
