@@ -75,6 +75,14 @@ class User(db.Model):
             print("Attempted to buy stock of unvalid symbol")
             return False
 
+    def create(username, password):
+        # Insert user and hashed password into database
+        hash = generate_password_hash(password)
+        user = User(username=username,
+                    hash=hash)
+        db.session.add(user)
+        db.session.commit()
+
 
 class Stock(db.Model):
     __tablename__ = "stocks"
