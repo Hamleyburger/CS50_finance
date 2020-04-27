@@ -1,7 +1,8 @@
 from application import app
 from flask import session, request, redirect, render_template, flash, jsonify
-from .helpers import login_required, apology, lookup, usd, getUser, \
-    clearSessionKeepFlash, userVerified, createUser, setSessionStock, lookupRepopulate
+from .helpers import login_required, apology, lookup, usd, \
+    clearSessionKeepFlash, setSessionStock
+from .dbhelpers import userVerified
 from .models import User
 from werkzeug.exceptions import default_exceptions, HTTPException, \
     InternalServerError
@@ -29,7 +30,6 @@ def index():
 @app.route("/buy", methods=["GET", "POST"])
 @login_required
 def buy():
-
     if request.method == "POST":
 
         user = User.query.filter_by(id=session["user_id"]).first_or_404()
@@ -57,9 +57,14 @@ def buy():
         # BUY
         else:
             # User decided to buy a stock
+            if user.buy(session["buystock"]["symbol"], session["buystock"]["amount"]):
+                print("Congrats")
+            else:
+                print("Bummer")
+        """
             print("User has cash: {:.2f} and wants to buy for {:.2f}".format(
                 cash, float(session["buystock"]["price"]) * float(session["buystock"]["amount"])))
-
+        """
         if (float(session["buystock"]["amount"]) > 0) and ("price" in session["buystock"]):
             session["buytotal"] = float(
                 session["buystock"]["amount"]) * float(session["buystock"]["price"])
@@ -101,7 +106,7 @@ def login():
         password = request.form.get("password")
 
         if userVerified(username, password):
-            session["user_id"] = userVerified(username, password)
+            print("Line 111 views: User verified and is is {}".format(session["user_id"]))
             # Redirect user to home page
             return redirect("/")
         else:
@@ -171,11 +176,11 @@ def register():
             return apology("Passwords didn't match", 403)
 
         # Check if username is taken
-        if getUser(form("username")):
+        if User.get(form("username")):
             return apology("username taken", 403)
         else:
             # Insert user and hashed password into database
-            createUser(form("username"), form("password"))
+            User.create(form("username"), form("password"))
 
             flash(u"You were successfully registered", "success")
             return redirect("/login")

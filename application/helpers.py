@@ -1,12 +1,11 @@
-from application import app, db
+# Helpers is being used by models and dbhelpers and must not import models or
+# dbhelpers (because it will create circular import)
+# Helpers so far handles session, decorators for views and stock API
+
+from application import app
 import requests
 import urllib.parse
 import datetime
-from .models import User
-
-# for handling passwords (with database)
-from werkzeug.security import check_password_hash
-
 
 from flask import redirect, render_template, request, session, flash
 from functools import wraps
@@ -75,42 +74,6 @@ def usd(value):
     return f"${value:,.2f}"
 
 
-def getUser(username):
-
-    user = User.query.filter_by(username=username).first()
-
-    if not user:
-        print("getUser: query returned None")
-        return None
-    else:
-        return user
-
-
-def userVerified(username, password):
-    # Ensure username exists and password is correct
-    if getUser(username):
-        user = getUser(username)
-
-        # Username exists, check password hash:
-        if check_password_hash(user.hash, password):
-            # Hash was correct - log user in
-            print("userVerified: hash and password match!")
-            session["user_id"] = user.id
-            return True
-        else:
-            # User exists but password is incorrect
-            print("userVerified: hash and password didn't match")
-            return False
-    else:
-        # User does not exist
-        print("userVerified: getUser returned None")
-        return False
-
-
-def createUser(username, password):
-    User.create(username, password)
-
-
 def clearSessionKeepFlash():
     # Forget any user_id, but maintain message flash if present
     if session.get("_flashes"):
@@ -158,3 +121,5 @@ def lookupRepopulate(receivingDict, symbol):
             receivingDict[newKey] = newValue
     else:
         flash(u"Could not find stock symbol in database", "danger")
+
+
