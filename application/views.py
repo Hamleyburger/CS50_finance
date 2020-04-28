@@ -47,25 +47,34 @@ def buy():
             # helpers.sesSessionStock refreshes session if symbol is valid,
             # sets amount to 1 if symbol is different from previous
             # and instantiates stock info dictionary if it doesn't exist
-            setSessionStock("buystock", symbol)
+            setSessionStock("buystock", symbol=symbol)
 
         # REFRESH
         elif action == "refresh":
-            # User refreshed price. Should only work if buystock has a symbol
-            setSessionStock("buystock", amount=request.form.get("amount"))
+            # User refreshed amount. Refresh total if amount > 0.
+            amount = int(request.form.get("amount"))
+            if amount > 0:
+                setSessionStock("buystock", amount=amount)
+            else:
+                flash(u"You must input an amount higher than 0", "danger")
 
         # BUY
         else:
             # User decided to buy a stock
-            if user.buy(session["buystock"]["symbol"], session["buystock"]["amount"]):
+            amount = int(session["buystock"]["amount"])
+            if amount < 1:
+                flash(u"You can't buy less than one", "danger")
+            elif user.buy(session["buystock"]["symbol"], amount):
                 print("Congrats")
             else:
                 print("Bummer")
+                flash("Something went wrong")    
         """
             print("User has cash: {:.2f} and wants to buy for {:.2f}".format(
                 cash, float(session["buystock"]["price"]) * float(session["buystock"]["amount"])))
         """
-        if (float(session["buystock"]["amount"]) > 0) and ("price" in session["buystock"]):
+        # Refresh total (amount is handled )
+        if "price" in session["buystock"]:
             session["buytotal"] = float(
                 session["buystock"]["amount"]) * float(session["buystock"]["price"])
 

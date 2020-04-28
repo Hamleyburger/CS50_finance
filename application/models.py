@@ -55,11 +55,16 @@ class User(db.Model):
     def buy(self, symbol, amount):
         # Buy is a bool that returns true if success and false
         # if user doesn't have enough money
+        if int(amount) < 1:
+            print("can't buy less than one")
+            # User tries to buy less than one
+            return False
         if lookup(symbol):
             stockDict = lookup(symbol)
             pricetotal = float(stockDict["price"]) * float(amount)
             cash = float(self.cash)
             if cash < pricetotal:
+                # User can't afford
                 print("User has {:.2f} and needs {:.2f}. This sucks.".format(cash, pricetotal))
                 return False
             else:
@@ -72,7 +77,7 @@ class User(db.Model):
                 # Also a method for subtracting if exists will be needed.
                 return True
         else:
-            print("Attempted to buy stock of unvalid symbol")
+            print("Attempted to buy stock of invalid symbol")
             return False
 
     def create(username, password):
