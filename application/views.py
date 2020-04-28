@@ -30,6 +30,7 @@ def index():
 @app.route("/buy", methods=["GET", "POST"])
 @login_required
 def buy():
+
     if request.method == "POST":
 
         user = User.query.filter_by(id=session["user_id"]).first_or_404()
@@ -44,14 +45,15 @@ def buy():
         if action == "search":
 
             symbol = request.form.get("symbol")
-            # helpers.sesSessionStock refreshes session if symbol is valid,
-            # sets amount to 1 if symbol is different from previous
-            # and instantiates stock info dictionary if it doesn't exist
-            setSessionStock("buystock", symbol=symbol)
+            if lookup(symbol):
+                # Refresh stock info and reset amount if new symbol/stock search
+                setSessionStock("buystock", symbol=symbol)
+            else:
+                flash(u"Invalid stock symbol", "danger")
 
         # REFRESH
         elif action == "refresh":
-            # User refreshed amount. Refresh total if amount > 0.
+            # User refreshed amount. Refresh total if amount > 0. Else 
             amount = int(request.form.get("amount"))
             if amount > 0:
                 setSessionStock("buystock", amount=amount)
@@ -60,22 +62,16 @@ def buy():
 
         # BUY
         else:
-            # User decided to buy a stock
-            amount = int(session["buystock"]["amount"])
-            if amount < 1:
-                flash(u"You can't buy less than one", "danger")
-            elif user.buy(session["buystock"]["symbol"], amount):
-                print("Congrats")
+            # User decided to buy a stock. Buy and reset "buystock" in session
+            if user.buy(session["buystock"]["symbol"], session["buystock"]["amount"]):
+                flash(u"Purhased {} {}".format(session["buystock"]["amount"], session["buystock"]["name"]), "success")
+                session["buystock"] = {}
             else:
-                print("Bummer")
-                flash("Something went wrong")    
-        """
-            print("User has cash: {:.2f} and wants to buy for {:.2f}".format(
-                cash, float(session["buystock"]["price"]) * float(session["buystock"]["amount"])))
-        """
+                flash("Something went wrong")
+
         # Refresh total (amount is handled )
-        if "price" in session["buystock"]:
-            session["buytotal"] = float(
+        if ("price" in session["buystock"]) and ("amount" in session["buystock"]):
+            session["buystock"]["buytotal"] = float(
                 session["buystock"]["amount"]) * float(session["buystock"]["price"])
 
         return redirect(request.url)

@@ -86,10 +86,10 @@ def clearSessionKeepFlash():
 
 def setSessionStock(keyString, symbol=None, amount=None):
     """
-    using lookup
     instantiate stock info in session if none
-    refresh info and maintain amount if same
-    refresh info and reset amount if new
+    refresh stock info if symbol is valid
+    refresh stock info and maintain amount if same
+    refresh stock info and reset amount if new
     "keyString" is the session key
     """
 
@@ -103,6 +103,9 @@ def setSessionStock(keyString, symbol=None, amount=None):
                 if session["buystock"]["symbol"].lower() != symbol.lower():
                     # if it's a different symbol from before, amount is 1
                     amount = 1
+            else:
+                amount = 1
+
         # try to refresh session with new data from lookup
         lookupRepopulate(session[keyString], symbol)
     # No symbol was passed in. Refresh currect info if exists

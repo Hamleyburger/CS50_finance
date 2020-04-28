@@ -64,8 +64,8 @@
                 <button class="btn btn-primary" type="submit" name="submit-button" value="buy">Buy</button>
                 <div class="pull-right" style="margin: 5px">
                     Total price: <b>
-                    {% if "buytotal" in session %}
-                        {{ "$%.2f"|format(session["buytotal"]) }}
+                    {% if "buytotal" in buyDict %}
+                        {{ "$%.2f"|format(buyDict["buytotal"]) }}
                     {% endif %}
                     </b>
                 </div>
