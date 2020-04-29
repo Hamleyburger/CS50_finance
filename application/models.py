@@ -74,8 +74,9 @@ class User(db.Model):
                     cash, pricetotal))
                 self.cash -= decimal.Decimal(pricetotal)
                 Owned.add(self, symbol, amount)
-                purchase = Purchases(stock_id=1, user_id=1, amount=1, unit_price=1, total_price=1)
-                db.session.add(purchase)
+                purchase = Purchases(stock_id=Stock.get(symbol).id, amount=amount, unit_price=decimal.Decimal(
+                    stockDict["price"]), total_price=decimal.Decimal(pricetotal))
+                self.purchases.append(purchase)
                 db.session.commit()
                 # Make a methid in Owned (instantiated?) that adds amount owned if not exists.
                 # If it exists alter amount.
@@ -179,4 +180,4 @@ class Purchases(db.Model):
     time = db.Column(db.DateTime, nullable=False,
                      default=datetime.datetime.utcnow())
     # Remember to return time in .isoformat() for displaying in the browser by
-    # formatting with moment.js
+    # formattingwith moment.js
