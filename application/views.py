@@ -34,8 +34,6 @@ def buy():
     if request.method == "POST":
 
         user = User.query.filter_by(id=session["user_id"]).first_or_404()
-        print("Hello, {}. I will be handling your data".format(user.username))
-        cash = user.cash
         # action can be search, refresh (amount) or buy
         action = request.form.get("submit-button")
         # setSessionStock initiates or refreshes session stock info
@@ -66,6 +64,7 @@ def buy():
             if user.buy(session["buystock"]["symbol"], session["buystock"]["amount"]):
                 flash(u"Purhased {} {}".format(session["buystock"]["amount"], session["buystock"]["name"]), "success")
                 session["buystock"] = {}
+                session["cash"] = user.cash
             else:
                 flash("Something went wrong")
 

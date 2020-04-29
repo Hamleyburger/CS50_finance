@@ -26,7 +26,7 @@
         
         {% if ("buystock" not in session) %}
         <!-- User still hasn't posted anything. -->
-        {% elif session["buystock"] != {} %}
+        {% elif "symbol" in session["buystock"] %}
         <!-- User has searched for a valid stock. -->
         {% set buyDict = session["buystock"] %}
         <!-- buyDict is the dictionary with stock information. -->

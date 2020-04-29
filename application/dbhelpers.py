@@ -18,6 +18,8 @@ def userVerified(username, password):
             # Hash was correct - log user in
             print("userVerified: hash and password match!")
             session["user_id"] = user.id
+            session["username"] = user.username
+            session["cash"] = user.cash
             return True
         else:
             # User exists but password is incorrect

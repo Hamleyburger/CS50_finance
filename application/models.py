@@ -31,7 +31,8 @@ class User(db.Model):
     # Relationships
     sales = db.relationship("Sales", backref="user", lazy=True)
     purchases = db.relationship("Purchases", backref="user", lazy=True)
-    owned = db.relationship("Stock", secondary="owned", backref=db.backref("users", lazy=True))
+    owned = db.relationship("Stock", secondary="owned",
+                            backref=db.backref("users", lazy=True))
 
     # Methods for class in general
     def create(username, password):
@@ -65,12 +66,16 @@ class User(db.Model):
             cash = float(self.cash)
             if cash < pricetotal:
                 # User can't afford
-                print("User has {:.2f} and needs {:.2f}. This sucks.".format(cash, pricetotal))
+                print("User has {:.2f} and needs {:.2f}. This sucks.".format(
+                    cash, pricetotal))
                 return False
             else:
-                print("User has {:.2f} and buys stocks for {:.2f}".format(cash, pricetotal))
+                print("User has {:.2f} and buys stocks for {:.2f}".format(
+                    cash, pricetotal))
                 self.cash -= decimal.Decimal(pricetotal)
                 Owned.add(self, symbol, amount)
+                purchase = Purchases(stock_id=1, user_id=1, amount=1, unit_price=1, total_price=1)
+                db.session.add(purchase)
                 db.session.commit()
                 # Make a methid in Owned (instantiated?) that adds amount owned if not exists.
                 # If it exists alter amount.
@@ -117,7 +122,7 @@ class Stock(db.Model):
             stock = Stock(symbol=stockSymbol, name=stockName)
             db.session.add(stock)
             db.session.commit()
-        
+
         # Return whatever stock ended up being set to
         return stock
 
@@ -135,7 +140,8 @@ class Owned(db.Model):
     def add(user, symbol, amount):
         stock = Stock.get(symbol)
         amount = int(amount)
-        owned = Owned.query.filter_by(user_id=user.id, stock_id=stock.id).first()
+        owned = Owned.query.filter_by(
+            user_id=user.id, stock_id=stock.id).first()
         if owned:
             print("user already owns some amount of this")
             owned.amount += amount
@@ -171,4 +177,6 @@ class Purchases(db.Model):
     unit_price = db.Column(db.Numeric, nullable=False)
     total_price = db.Column(db.Numeric, nullable=False)
     time = db.Column(db.DateTime, nullable=False,
-                     default=datetime.datetime.utcnow().isoformat())
+                     default=datetime.datetime.utcnow())
+    # Remember to return time in .isoformat() for displaying in the browser by
+    # formatting with moment.js
