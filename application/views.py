@@ -45,6 +45,7 @@ def buy():
             symbol = request.form.get("symbol")
             if lookup(symbol):
                 # Refresh stock info and reset amount if new symbol/stock search
+                print(lookup(symbol))
                 setSessionStock("buystock", symbol=symbol)
             else:
                 flash(u"Invalid stock symbol", "danger")
@@ -198,6 +199,9 @@ def register():
 @login_required
 def sell():
     """Sell shares of stock"""
+    u = User.get("admin")
+    print(u.sell("goog", 2))
+    print(u.sell("67tj7", 2))
     return apology("TODO")
 
 

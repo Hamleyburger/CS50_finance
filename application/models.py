@@ -35,17 +35,20 @@ class User(db.Model):
                             backref=db.backref("users", lazy=True))
 
     # Methods for class in general
-    def create(username, password):
+    @classmethod
+    def create(cls, username, password):
+
         # Insert user and hashed password into database
         hash = generate_password_hash(password)
-        user = User(username=username,
-                    hash=hash)
+        user = cls(username=username,
+                   hash=hash)
         db.session.add(user)
         db.session.commit()
 
-    def get(username):
+    @classmethod
+    def get(cls, username):
         # This method returns user if exists, otherwise None
-        user = User.query.filter_by(username=username).first()
+        user = cls.query.filter_by(username=username).first()
         if not user:
             print("user.get: query returned None")
             return None
@@ -53,29 +56,57 @@ class User(db.Model):
             return user
 
     # Methods for instantiated objects
+    def amountOwned(self, symbol):
+        # Returns the amount of stocks of this symbol the user owns, if none
+        # owned, return None
+        # select amount from owned join stock on owned.stock_id=stock.id
+        # where stock.symbol=symbol and owned.user_id = self.id
+        symbol = symbol.upper()
+        ownedStock = Owned.query.filter_by(user_id=self.id).join(
+            Stock).filter_by(symbol=symbol).first()
+        if ownedStock:
+            return ownedStock.amount
+        else:
+            return 0
+
+    def sell(self, symbol, amount):
+        # Sell() is a bool that returns true if success
+        if (int(amount) > 0) and (lookup(symbol)):
+            # User wants to sell a stock that exists
+            # Check that user owns this stock and as much as amount
+            if self.amountOwned(symbol) >= amount:
+                # User owns enouh of this stock. Calculate value
+                stockDict = lookup(symbol)
+                pricetotal = decimal.Decimal(
+                    stockDict["price"]) * decimal.Decimal(amount)
+
+                # Make the transaction: withdraw money, remove amount of owned stocks
+                self.cash += pricetotal
+                Owned.remove(self, symbol, amount)
+                return True
+        return False
+
     def buy(self, symbol, amount):
         # Buy is a bool that returns true if success and false
         # if user doesn't have enough money
         if int(amount) < 1:
-            print("can't buy less than one")
-            # User tries to buy less than one
+            # User tried to buy less than one
             return False
-        if lookup(symbol):
+        elif lookup(symbol):
             stockDict = lookup(symbol)
-            pricetotal = float(stockDict["price"]) * float(amount)
-            cash = float(self.cash)
-            if cash < pricetotal:
+            pricetotal = decimal.Decimal(
+                stockDict["price"]) * decimal.Decimal(amount)
+            if self.cash < pricetotal:
                 # User can't afford
-                print("User has {:.2f} and needs {:.2f}. This sucks.".format(
-                    cash, pricetotal))
                 return False
             else:
-                print("User has {:.2f} and buys stocks for {:.2f}".format(
-                    cash, pricetotal))
-                self.cash -= decimal.Decimal(pricetotal)
-                Owned.add(self, symbol, amount)
-                purchase = Purchases(stock_id=Stock.get(symbol).id, amount=amount, unit_price=decimal.Decimal(
-                    stockDict["price"]), total_price=decimal.Decimal(pricetotal))
+                # Purchase goes through. Withdraw money, add stock to database,
+                # add stock+amount to user's "Owned", add purchase to user's purchases
+                self.cash -= pricetotal
+                stock = Stock.get(symbol)
+                Owned.add(self, stock, amount)
+                purchase = Purchases(stock_id=stock.id, amount=amount, unit_price=decimal.Decimal(
+                    stockDict["price"]), total_price=pricetotal)
                 self.purchases.append(purchase)
                 db.session.commit()
                 # Make a methid in Owned (instantiated?) that adds amount owned if not exists.
@@ -86,14 +117,6 @@ class User(db.Model):
             print("Attempted to buy stock of invalid symbol")
             return False
 
-    def create(username, password):
-        # Insert user and hashed password into database
-        hash = generate_password_hash(password)
-        user = User(username=username,
-                    hash=hash)
-        db.session.add(user)
-        db.session.commit()
-
 
 class Stock(db.Model):
     __tablename__ = "stocks"
@@ -102,10 +125,11 @@ class Stock(db.Model):
     symbol = db.Column(db.String(), nullable=False, unique=True)
     name = db.Column(db.String, nullable=False)
 
-    # Adds a stock to database if it doesn't already exists.
-    # Because in that way only stocks relevant to the app will be added
-    # to database.
-    def get(symbol):
+    # Checks with a stock symbol if the stock exists
+    # If it exists in API return it, else return None
+    # If it did not exist in database Stocks table, add it.
+    @classmethod
+    def get(cls, symbol):
         stockDict = {}
         if lookup(symbol):
             stockDict = lookup(symbol)
@@ -116,11 +140,11 @@ class Stock(db.Model):
         stockName = stockDict["name"]
 
         # If this stock is already in database - use it!
-        stock = Stock.query.filter_by(symbol=stockSymbol).first()
+        stock = cls.query.filter_by(symbol=stockSymbol).first()
 
         # If not already in database - add and then use!
         if not stock:
-            stock = Stock(symbol=stockSymbol, name=stockName)
+            stock = cls(symbol=stockSymbol, name=stockName)
             db.session.add(stock)
             db.session.commit()
 
@@ -138,18 +162,33 @@ class Owned(db.Model):
         'stocks.id'), nullable=False)
     amount = db.Column(db.Integer, nullable=False)
 
-    def add(user, symbol, amount):
-        stock = Stock.get(symbol)
+    @classmethod
+    def add(cls, user, stock, amount):
         amount = int(amount)
-        owned = Owned.query.filter_by(
+        owned = cls.query.filter_by(
             user_id=user.id, stock_id=stock.id).first()
         if owned:
             print("user already owns some amount of this")
             owned.amount += amount
         else:
             print("User bought this for the first time.")
-            owned = Owned(user_id=user.id, stock_id=stock.id, amount=amount)
+            owned = cls(user_id=user.id, stock_id=stock.id, amount=amount)
             db.session.add(owned)
+        db.session.commit()
+
+    @classmethod
+    def remove(cls, user, symbol, amount):
+        symbol = symbol.upper()
+        stock = Stock.get(symbol)
+        owned = cls.query.filter_by(user_id=user.id, stock_id=stock.id).first()
+        if owned:
+            owned.amount -= amount
+            print("{} now owns {} {}".format(
+                user.username, owned.amount, stock.name))
+            if owned.amount == 0:
+                db.session.remove(owned)
+        else:
+            print("User does not own this.")
         db.session.commit()
 
 
