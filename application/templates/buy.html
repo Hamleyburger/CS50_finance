@@ -1,84 +1,158 @@
-{% extends "layout.html" %}
-
-{% block title %}
-    Buy
-{% endblock %}
-
-{% block main %}
-
-
+{% extends "layout.html" %} {% block title %} Buy {% endblock %} {% block main
+%}
 
 <div>
-    <form action="/buy" method="post">
-        <! –– search bar ––>
-        <div class="input-group">
-            <input type="text" class="form-control" placeholder="Stock symbol" name="symbol" autofocus autocomplete="off">
-            <div class="input-group-btn">
-                <button class="btn btn-default formborder" type="submit" name="submit-button" value="search">
-                <i class="fas fa-search"></i>
-                </button>
-            </div>
+  <form action="/buy" method="post">
+    <! –– search bar ––>
+    <div class="input-group">
+      <input
+        type="text"
+        class="form-control"
+        placeholder="Stock symbol"
+        name="symbol"
+        autofocus
+        autocomplete="off"
+      />
+      <div class="input-group-btn">
+        <button
+          class="btn btn-default formborder"
+          type="submit"
+          name="submit-button"
+          value="search"
+        >
+          <i class="fas fa-search"></i>
+        </button>
+      </div>
+    </div>
+
+    {% if ("buystock" not in session) %}
+    <!-- User still hasn't posted anything. -->
+    {% elif "symbol" in session["buystock"] %}
+    <!-- User has searched for a valid stock. -->
+    {% set buyDict = session["buystock"] %}
+    <!-- buyDict is the dictionary with stock information. -->
+    <div class="container">
+      <!-- PRODUCT -->
+      <div class="row justify-content-between product-container">
+        <div class="col-12 text-sm-center col-sm-12 text-md-left col-md-6">
+          <h4 class="product-name"><strong>{{ buyDict["name"] }}</strong></h4>
+          <h4>
+            <small>{{ buyDict["symbol"] }}</small>
+          </h4>
         </div>
-
-
-        
-        
-        
-        {% if ("buystock" not in session) %}
-        <!-- User still hasn't posted anything. -->
-        {% elif "symbol" in session["buystock"] %}
-        <!-- User has searched for a valid stock. -->
-        {% set buyDict = session["buystock"] %}
-        <!-- buyDict is the dictionary with stock information. -->
-        <div class="card-body">
-
-            <!-- PRODUCT -->
-            <div class="row justify-content-between">
-                <div class="col-12 text-sm-center col-sm-12 text-md-left col-md-6">
-                    <h4 class="product-name"><strong>{{ buyDict["name"] }}</strong></h4>
-                    <h4>
-                        <small>{{ buyDict["symbol"] }}</small>
-                    </h4>
-                </div>
-                <div class="col-12 col-sm-12 text-sm-center col-md-6 text-md-right row">
-                    <div class="xspadding col-5 col-sm-5 col-md-6 text-md-right" style="padding-top: 5px">
-                        <h6><strong>{{ buyDict["price"] }} <span class="text-muted">x</span></strong></h6>
-                    </div>
-                    <div class="xspadding col-7 col-sm-7 col-md-6 text-md-right">
-                        <div class="quantity input-group">
-                            <input type="number" step="1" max="99" min="1" value="{{ session['buystock']['amount'] }}" title="Qty" class="qty"
-                                   size="4" name="amount">
-                            <button type="submit" name="submit-button" value="refresh" class="btn input-group-btn btn-secondary"><i class="fas fa-sync-alt"></i></button>
-
-                        </div>
-                    </div>
-                </div>
+        <div class="col-12 col-sm-12 text-sm-center col-md-6 text-md-right row">
+          <div
+            class="xspadding col-5 col-sm-5 col-md-6 text-md-right"
+            style="padding-top: 5px;"
+          >
+            <h6>
+              <strong
+                >{{ buyDict["price"] }}
+                <span class="text-muted">x</span></strong
+              >
+            </h6>
+          </div>
+          <div class="xspadding col-7 col-sm-7 col-md-6 text-md-right">
+            <div class="quantity input-group">
+              <input
+                type="number"
+                step="1"
+                max="99"
+                min="1"
+                value="{{ session['buystock']['amount'] }}"
+                title="Qty"
+                class="qty"
+                size="4"
+                name="amount"
+              />
+              <button
+                type="submit"
+                name="submit-button"
+                value="refresh"
+                class="btn input-group-btn btn-secondary"
+              >
+                <i class="fas fa-sync-alt"></i>
+              </button>
             </div>
-            <hr>
-            <!-- END PRODUCT -->
-            
+          </div>
         </div>
-        <div class="card-footer">
-            
-            <div class="pull-right" style="margin: 10px">
-                <button class="btn btn-primary" type="submit" name="submit-button" value="buy">Buy</button>
-                <div class="pull-right" style="margin: 5px">
-                    Total price: <b>
-                    {% if "buytotal" in buyDict %}
-                        {{ "$%.2f"|format(buyDict["buytotal"]) }}
-                    {% endif %}
-                    </b>
-                </div>
+      </div>
+      <hr />
+
+      <div class="container product-container">
+        <div class="row">
+          <div class="col-5" style="padding-right: 0; padding-left: 0;">
+            <h4 class="product-name">
+              <strong>{{ buyDict["name"] }}</strong>
+            </h4>
+            <h4>
+              <small>{{ buyDict["symbol"] }}</small>
+            </h4>
+          </div>
+          <div
+            class="col-7"
+            style="padding-right: 0; padding-left: 0; padding-top: 10px;"
+          >
+            <div
+              class="quantity input-group align-items-center justify-content-end"
+            >
+              <h6>
+                <strong
+                  >{{ buyDict["price"] }}
+                  <span class="text-muted" style="padding-right: 4px;"
+                    >x</span
+                  ></strong
+                >
+              </h6>
+
+              <input
+                type="number"
+                step="1"
+                max="99"
+                min="1"
+                value="{{ session['buystock']['amount'] }}"
+                title="Qty"
+                class="qty"
+                size="4"
+                name="amount"
+                style="width: 58px;"
+              />
+              <button
+                type="submit"
+                name="submit-button"
+                value="refresh"
+                class="btn input-group-btn btn-secondary"
+              >
+                <i class="fas fa-sync-alt"></i>
+              </button>
             </div>
+          </div>
         </div>
+      </div>
+      <!-- END PRODUCT -->
+    </div>
+    <div class="card-footer">
+      <div class="pull-right" style="margin: 10px;">
+        <button
+          class="btn btn-primary"
+          type="submit"
+          name="submit-button"
+          value="buy"
+        >
+          Buy
+        </button>
+        <div class="pull-right" style="margin: 5px;">
+          Total price:
+          <b>
+            {% if "buytotal" in buyDict %} {{
+            "$%.2f"|format(buyDict["buytotal"]) }} {% endif %}
+          </b>
+        </div>
+      </div>
+    </div>
 
-
-        {% endif %}
-
-
-    </form>
+    {% endif %}
+  </form>
 </div>
-        
-        
-        
+
 {% endblock %}
