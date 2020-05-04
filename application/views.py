@@ -52,7 +52,7 @@ def buy():
 
         # REFRESH
         elif action == "refresh":
-            # User refreshed amount. Refresh total if amount > 0. Else 
+            # User refreshed amount. Refresh total if amount > 0. Else
             amount = int(request.form.get("amount"))
             if amount > 0:
                 setSessionStock("buystock", amount=amount)
@@ -63,7 +63,8 @@ def buy():
         else:
             # User decided to buy a stock. Buy and reset "buystock" in session
             if user.buy(session["buystock"]["symbol"], session["buystock"]["amount"]):
-                flash(u"Purhased {} {}".format(session["buystock"]["amount"], session["buystock"]["name"]), "success")
+                flash(u"Purhased {} {}".format(
+                    session["buystock"]["amount"], session["buystock"]["name"]), "success")
                 session["buystock"] = {}
                 session["cash"] = user.cash
             else:
@@ -111,7 +112,8 @@ def login():
         password = request.form.get("password")
 
         if userVerified(username, password):
-            print("Line 111 views: User verified and is is {}".format(session["user_id"]))
+            print("Line 111 views: User verified and is is {}".format(
+                session["user_id"]))
             # Redirect user to home page
             return redirect("/")
         else:

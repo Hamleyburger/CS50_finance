@@ -45,6 +45,7 @@ def lookup(symbol):
     """Look up quote for symbol."""
 
     # Contact API
+    print("urllib.parse= {}".format(urllib.parse.quote_plus(symbol)))
     try:
         api_key = app.config["API_KEY"]
         response = requests.get(
@@ -124,5 +125,3 @@ def lookupRepopulate(receivingDict, symbol):
             receivingDict[newKey] = newValue
     else:
         flash(u"Could not find stock symbol in database", "danger")
-
-

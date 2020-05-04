@@ -3,7 +3,7 @@
 
 <div>
   <form action="/buy" method="post">
-    <! –– search bar ––>
+    <! –– search bar ––  >
     <div class="input-group">
       <input
         type="text"
@@ -13,9 +13,10 @@
         autofocus
         autocomplete="off"
       />
-      <div class="input-group-btn">
+      <div class="input-group-append">
+        <! -- search button -->
         <button
-          class="btn btn-default formborder"
+          class="mybtn btn btn-outline-secondary"
           type="submit"
           name="submit-button"
           value="search"
@@ -24,16 +25,18 @@
         </button>
       </div>
     </div>
+    <! -- end of searchbar -- >
 
+    <! -- product containter, only shows if there's a valid stock in flask session -- >
     {% if ("buystock" not in session) %}
     <!-- User still hasn't posted anything. -->
     {% elif "symbol" in session["buystock"] %}
     <!-- User has searched for a valid stock. -->
     {% set buyDict = session["buystock"] %}
     <!-- buyDict is the dictionary with stock information. -->
-    <div class="container">
+    <div class="container-fluid product-container">
       <!-- PRODUCT -->
-      <div class="row justify-content-between product-container">
+      <div class="row justify-content-between">
         <div class="col-12 text-sm-center col-sm-12 text-md-left col-md-6">
           <h4 class="product-name"><strong>{{ buyDict["name"] }}</strong></h4>
           <h4>
@@ -61,15 +64,15 @@
                 min="1"
                 value="{{ session['buystock']['amount'] }}"
                 title="Qty"
-                class="qty"
                 size="4"
                 name="amount"
               />
+              <! -- refresh button -->
               <button
                 type="submit"
                 name="submit-button"
                 value="refresh"
-                class="btn input-group-btn btn-secondary"
+                class="mybtn btn input-group-btn btn-secondary"
               >
                 <i class="fas fa-sync-alt"></i>
               </button>
@@ -79,9 +82,12 @@
       </div>
       <hr />
 
-      <div class="container product-container">
+      <div class="container-fluid">
         <div class="row">
-          <div class="col-5" style="padding-right: 0; padding-left: 0;">
+          <div
+            class="col-12 col-sm-6"
+            style="padding-right: 0; padding-left: 0;"
+          >
             <h4 class="product-name">
               <strong>{{ buyDict["name"] }}</strong>
             </h4>
@@ -90,51 +96,67 @@
             </h4>
           </div>
           <div
-            class="col-7"
-            style="padding-right: 0; padding-left: 0; padding-top: 10px;"
+            class="col-12 col-sm-6 text-right"
+            style="
+              margin-top: auto;
+              padding-right: 0;
+              padding-left: 0;
+              padding-top: 10px;
+            "
           >
             <div
-              class="quantity input-group align-items-center justify-content-end"
+              style="
+                display: flex;
+                justify-content: flex-end;
+                align-items: center;
+              "
             >
-              <h6>
+              <span>
                 <strong
                   >{{ buyDict["price"] }}
                   <span class="text-muted" style="padding-right: 4px;"
                     >x</span
                   ></strong
                 >
-              </h6>
+              </span>
 
-              <input
-                type="number"
-                step="1"
-                max="99"
-                min="1"
-                value="{{ session['buystock']['amount'] }}"
-                title="Qty"
-                class="qty"
-                size="4"
-                name="amount"
-                style="width: 58px;"
-              />
-              <button
-                type="submit"
-                name="submit-button"
-                value="refresh"
-                class="btn input-group-btn btn-secondary"
-              >
-                <i class="fas fa-sync-alt"></i>
-              </button>
+              <div class="input-group float-right" style="max-width: 100px;">
+                <input
+                  class="form-control"
+                  type="number"
+                  step="1"
+                  max="99"
+                  min="1"
+                  value="{{ session['buystock']['amount'] }}"
+                  title="Qty"
+                  size="4"
+                  name="amount"
+                  style="width: 58px;"
+                />
+                <div class="input-group-append">
+                  <! -- refresh button -- >
+                  <button
+                    type="submit"
+                    name="submit-button"
+                    value="refresh"
+                    class="mybtn btn btn-outline-secondary"
+                  >
+                    <i class="fas fa-sync-alt"></i>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
+      <hr />
       <!-- END PRODUCT -->
     </div>
     <div class="card-footer">
       <div class="pull-right" style="margin: 10px;">
+        <! -- buy button -->
         <button
-          class="btn btn-primary"
+          class="mybtn btn btn-primary"
           type="submit"
           name="submit-button"
           value="buy"
