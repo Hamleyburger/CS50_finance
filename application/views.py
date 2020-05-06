@@ -45,7 +45,6 @@ def buy():
             symbol = request.form.get("symbol")
             if lookup(symbol):
                 # Refresh stock info and reset amount if new symbol/stock search
-                print(lookup(symbol))
                 setSessionStock("buystock", symbol=symbol)
             else:
                 flash(u"Invalid stock symbol", "danger")
@@ -112,15 +111,10 @@ def login():
         password = request.form.get("password")
 
         if userVerified(username, password):
-            print("Line 111 views: User verified and is is {}".format(
-                session["user_id"]))
             # Redirect user to home page
             return redirect("/")
         else:
             return apology("invalid username or password", 403)
-
-        # for debugging
-        print(session)
 
     # User reached route via GET (as by clicking a link or via redirect)
     else:
@@ -201,10 +195,70 @@ def register():
 @login_required
 def sell():
     """Sell shares of stock"""
-    u = User.get("admin")
-    print(u.sell("goog", 2))
-    print(u.sell("67tj7", 2))
-    return apology("TODO")
+    """TODO: 
+    if get:
+        define a list of owned stocks containing: Symbol, name, price, amount owned
+        render template sell
+    if post:
+        search must be searching list of owned stocks for filtering
+        search can redefine the list which will only be reset at get or after sell.
+        search does NOT define what stock is being sold.
+        clicking an item opens a sell modal.
+        make a "reset search" button
+
+        Sell dialogue (like buy stock):
+        refresh: refreshes amount of sell stocks
+        sell button sells.
+    """
+
+    if request.method == "POST":
+
+        user = User.query.filter_by(id=session["user_id"]).first_or_404()
+        # action can be search, refresh (amount) or sell
+        action = request.form.get("submit-button")
+        # setSessionStock initiates or refreshes session stock info
+        setSessionStock("sellstock")
+
+        # SEARCH
+        if action == "search":
+
+            symbol = request.form.get("symbol")
+            if lookup(symbol):
+                # Refresh stock info and reset amount if new symbol/stock search
+                setSessionStock("sellstock", symbol=symbol)
+            else:
+                flash(u"Invalid stock symbol", "danger")
+
+        # REFRESH
+        elif action == "refresh":
+            # User refreshed amount. Refresh total if amount > 0. Else
+            amount = int(request.form.get("amount"))
+            if amount > 0:
+                setSessionStock("sellstock", amount=amount)
+            else:
+                flash(u"You must input an amount higher than 0", "danger")
+
+        # SELL
+        else:
+            # User decided to sell a stock. Sell and reset "sellstock" in session
+            if user.sell(session["sellstock"]["symbol"], session["sellstock"]["amount"]):
+                flash(u"Sold {} {}".format(
+                    session["sellstock"]["amount"], session["sellstock"]["name"]), "success")
+                session["sellstock"] = {}
+                session["cash"] = user.cash
+            else:
+                flash("Something went wrong")
+
+        # Refresh total (amount is handled )
+        if ("price" in session["sellstock"]) and ("amount" in session["sellstock"]):
+            session["sellstock"]["selltotal"] = float(
+                session["sellstock"]["amount"]) * float(session["sellstock"]["price"])
+
+        return redirect(request.url)
+
+    # method is get
+    else:
+        return render_template("/sell.html")
 
 
 def errorhandler(e):

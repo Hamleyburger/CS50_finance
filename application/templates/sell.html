@@ -1,8 +1,8 @@
-{% extends "layout.html" %} {% block title %} Buy {% endblock %} {% block main
+{% extends "layout.html" %} {% block title %} Sell {% endblock %} {% block main
 %}
 
 <div>
-  <form action="/buy" method="post">
+  <form action="/sell" method="post">
     <! –– search bar ––  >
     <div class="input-group">
       <input
@@ -28,12 +28,12 @@
     <! -- end of searchbar -- >
 
     <! -- product containter, only shows if there's a valid stock in flask session -- >
-    {% if ("buystock" not in session) %}
+    {% if ("sellstock" not in session) %}
     <!-- User still hasn't posted anything. -->
-    {% elif "symbol" in session["buystock"] %}
+    {% elif "symbol" in session["sellstock"] %}
     <!-- User has searched for a valid stock. -->
-    {% set buyDict = session["buystock"] %}
-    <!-- buyDict is the dictionary with stock information. -->
+    {% set sellDict = session["sellstock"] %}
+    <!-- sellDict is the dictionary with stock information. -->
     <div class="container-fluid product-container">
       <!-- PRODUCT -->
       <div class="container-fluid">
@@ -43,10 +43,10 @@
             style="padding-right: 0; padding-left: 0;"
           >
             <h4 class="product-name">
-              <strong>{{ buyDict["name"] }}</strong>
+              <strong>{{ sellDict["name"] }}</strong>
             </h4>
             <h4>
-              <small>{{ buyDict["symbol"] }}</small>
+              <small>{{ sellDict["symbol"] }}</small>
             </h4>
           </div>
           <div
@@ -67,7 +67,7 @@
             >
               <span>
                 <strong
-                  >{{ buyDict["price"] }}
+                  >{{ sellDict["price"] }}
                   <span class="text-muted" style="padding-right: 4px;"
                     >x</span
                   ></strong
@@ -81,7 +81,7 @@
                   step="1"
                   max="99"
                   min="1"
-                  value="{{ session['buystock']['amount'] }}"
+                  value="{{ session['sellstock']['amount'] }}"
                   title="Qty"
                   size="4"
                   name="amount"
@@ -108,20 +108,20 @@
     </div>
     <div class="card-footer">
       <div class="pull-right" style="margin: 10px;">
-        <! -- buy button -->
+        <! -- sell button -->
         <button
           class="mybtn btn btn-primary"
           type="submit"
           name="submit-button"
-          value="buy"
+          value="sell"
         >
-          Buy
+          Sell
         </button>
         <div class="pull-right" style="margin: 5px;">
           Total price:
           <b>
-            {% if "buytotal" in buyDict %} {{
-            "$%.2f"|format(buyDict["buytotal"]) }} {% endif %}
+            {% if "selltotal" in sellDict %} {{
+            "$%.2f"|format(sellDict["selltotal"]) }} {% endif %}
           </b>
         </div>
       </div>

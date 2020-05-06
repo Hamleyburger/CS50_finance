@@ -45,7 +45,6 @@ def lookup(symbol):
     """Look up quote for symbol."""
 
     # Contact API
-    print("urllib.parse= {}".format(urllib.parse.quote_plus(symbol)))
     try:
         api_key = app.config["API_KEY"]
         response = requests.get(
@@ -85,14 +84,13 @@ def clearSessionKeepFlash():
         session.clear()
 
 
+"""
+instantiate or refresh stock info and sell/buy amount in session.
+"keyString" is the session key
+"""
+
+
 def setSessionStock(keyString, symbol=None, amount=None):
-    """
-    instantiate stock info in session if none
-    refresh stock info if symbol is valid
-    refresh stock info and maintain amount if same
-    refresh stock info and reset amount if new
-    "keyString" is the session key
-    """
 
     if keyString not in session:
         # if key not in session, make it exist to be searchable
@@ -100,8 +98,8 @@ def setSessionStock(keyString, symbol=None, amount=None):
         session[keyString]["amount"] = 1
     if symbol:
         if lookup(symbol):
-            if "symbol" in session["buystock"]:
-                if session["buystock"]["symbol"].lower() != symbol.lower():
+            if "symbol" in session[keyString]:
+                if session[keyString]["symbol"].lower() != symbol.lower():
                     # if it's a different symbol from before, amount is 1
                     amount = 1
             else:

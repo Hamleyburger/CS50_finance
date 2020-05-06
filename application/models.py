@@ -3,6 +3,7 @@ import datetime
 from werkzeug.security import generate_password_hash
 from .helpers import lookup
 import decimal
+from flask import flash
 
 
 """
@@ -69,12 +70,13 @@ class User(db.Model):
         else:
             return 0
 
+    # Sell() is a bool that returns true if success
     def sell(self, symbol, amount):
-        # Sell() is a bool that returns true if success
-        if (int(amount) > 0) and (lookup(symbol)):
-            # User wants to sell a stock that exists
-            # Check that user owns this stock and as much as amount
-            if self.amountOwned(symbol) >= amount:
+        # Check that amount >0
+        if int(amount) > 0:
+            # Check that user owns this stock and enough
+            amountOwned = self.amountOwned(symbol)
+            if amountOwned >= amount:
                 # User owns enouh of this stock. Calculate value
                 stockDict = lookup(symbol)
                 pricetotal = decimal.Decimal(
@@ -83,7 +85,15 @@ class User(db.Model):
                 # Make the transaction: withdraw money, remove amount of owned stocks
                 self.cash += pricetotal
                 Owned.remove(self, symbol, amount)
+                flash(u"Sold {} items of {}".format(
+                    amount, stockDict["name"]), "success")
                 return True
+            elif amountOwned == 0:
+                flash(u"You don't have any of this stock", "danger")
+            else:
+                flash(u"You don't own enough of this stock", "danger")
+        else:
+            flash(u"You can't sell 0 stocks", "danger")
         return False
 
     def buy(self, symbol, amount):
@@ -186,7 +196,9 @@ class Owned(db.Model):
             print("{} now owns {} {}".format(
                 user.username, owned.amount, stock.name))
             if owned.amount == 0:
-                db.session.remove(owned)
+                print("attempting to remove owned")
+                print(owned)
+                db.session.delete(owned)
         else:
             print("User does not own this.")
         db.session.commit()
