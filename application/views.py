@@ -1,9 +1,10 @@
 from application import app
-from flask import session, request, redirect, render_template, flash, jsonify
+from flask import session, request, redirect, render_template, flash, jsonify, url_for
 from .helpers import login_required, apology, lookup, usd, \
     clearSessionKeepFlash, setSessionStock
 from .dbhelpers import userVerified
 from .models import User
+from .forms import RegistrationForm, LoginForm
 from werkzeug.exceptions import default_exceptions, HTTPException, \
     InternalServerError
 
@@ -189,6 +190,32 @@ def register():
     # User reached route via GET (as by clicking a link or via redirect)
     else:
         return render_template("register.html")
+
+
+@app.route("/registur", methods=["GET", "POST"])
+def registur():
+    # Register user
+    # Forget anything user related
+    print(session)
+
+    form = RegistrationForm()
+    print("form.validate is {}".format(form.validate_on_submit()))
+    if form.validate_on_submit():
+        flash(f"account created for {form.username.data}!", "success")
+        return redirect(url_for("login"))
+
+    return render_template("registur.html", form=form)
+
+
+@app.route("/lugin", methods=["GET", "POST"])
+def lugin():
+    """Log user in"""
+
+    # Forget any user_id
+    clearSessionKeepFlash()
+
+    form = LoginForm()
+    return render_template("lugin.html", title="Login", form=form)
 
 
 @app.route("/sell", methods=["GET", "POST"])
