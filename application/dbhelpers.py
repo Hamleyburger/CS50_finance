@@ -9,6 +9,7 @@ from werkzeug.security import check_password_hash
 
 
 def userVerified(username, password):
+    """ Sets username, user ID and cash in session if username and passwords match """
     # Ensure username exists and password is correct
     if User.get(username):
         user = User.get(username)

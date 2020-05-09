@@ -6,17 +6,8 @@ import decimal
 from flask import flash
 
 
-"""
-CREATE TABLE 'users'
-('id' INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-'username' TEXT NOT NULL,
-'hash' TEXT NOT NULL,
-'cash' NUMERIC NOT NULL DEFAULT 10000.00 )
-"""
-
-
 class User(db.Model):
-
+    """Has everything that the user has and does"""
     # Table
     __tablename__ = "users"
     __table_args__ = {'extend_existing': True}
@@ -25,7 +16,7 @@ class User(db.Model):
     hash = db.Column(db.String(), nullable=False)
     # server_default sets actual default value in database. If ONLY ORM is
     # used to communicate with the db, setting default is enough.
-    # server_default does not take a plain number, sp use db.text() to set it
+    # server_default does not take a plain number, so use db.text() to set it
     cash = db.Column(db.Numeric, nullable=False,
                      server_default=db.text('10000.00'))
 
@@ -38,17 +29,19 @@ class User(db.Model):
     # Methods for class in general
     @classmethod
     def create(cls, username, password):
-
+        """ Hashes password and inserts username and password into Users table.\n
+        also returns the new user object"""
         # Insert user and hashed password into database
         hash = generate_password_hash(password)
         user = cls(username=username,
                    hash=hash)
         db.session.add(user)
         db.session.commit()
+        return user
 
     @classmethod
     def get(cls, username):
-        # This method returns user if exists, otherwise None
+        """This method returns user if exists, otherwise None"""
         user = cls.query.filter_by(username=username).first()
         if not user:
             print("user.get: query returned None")
@@ -58,10 +51,9 @@ class User(db.Model):
 
     # Methods for instantiated objects
     def amountOwned(self, symbol):
-        # Returns the amount of stocks of this symbol the user owns, if none
-        # owned, return None
-        # select amount from owned join stock on owned.stock_id=stock.id
-        # where stock.symbol=symbol and owned.user_id = self.id
+        """Expects valid stock symbol.\n
+        Returns the amount of given stock (from symbol) owned or None\n
+        """
         symbol = symbol.upper()
         ownedStock = Owned.query.filter_by(user_id=self.id).join(
             Stock).filter_by(symbol=symbol).first()
@@ -70,8 +62,8 @@ class User(db.Model):
         else:
             return 0
 
-    # Sell() is a bool that returns true if success
     def sell(self, symbol, amount):
+        """"Returns true if success. """
         # Check that amount >0
         if int(amount) > 0:
             # Check that user owns this stock and enough

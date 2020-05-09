@@ -75,6 +75,7 @@ def usd(value):
 
 
 def clearSessionKeepFlash():
+    """ Clears the session for everything except the flask flash message """
     # Forget any user_id, but maintain message flash if present
     if session.get("_flashes"):
         flashes = session.get("_flashes")
@@ -91,6 +92,11 @@ instantiate or refresh stock info and sell/buy amount in session.
 
 
 def setSessionStock(keyString, symbol=None, amount=None):
+    """
+    keyString is required: The key for the session entry for stock info.\n
+    symbol is optional: if passed in session is repopulated\n
+    amount is optional: if passed in amount of stock in question is changed.
+    """
 
     if keyString not in session:
         # if key not in session, make it exist to be searchable

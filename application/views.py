@@ -194,17 +194,33 @@ def register():
 
 @app.route("/registur", methods=["GET", "POST"])
 def registur():
-    # Register user
-    # Forget anything user related
-    print(session)
+    """Register user"""
 
     form = RegistrationForm()
-    print("form.validate is {}".format(form.validate_on_submit()))
-    if form.validate_on_submit():
-        flash(f"account created for {form.username.data}!", "success")
-        return redirect(url_for("login"))
+    # Forget anything user related
+    session.clear()
 
-    return render_template("registur.html", form=form)
+    # User reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+
+        if form.validate_on_submit():
+            flash(f"account created for {form.username.data}!", "success")
+
+
+        # Check if username is taken
+        if User.get(form.username.data):
+            return apology("username taken", 403)
+        else:
+            # Insert user and hashed password into database
+            User.create(form.username.data, form.password.data)
+
+            flash(u"You were successfully registered", "success")
+            return redirect("/login")
+
+    # User reached route via GET (as by clicking a link or via redirect)
+    else:
+        return render_template("registur.html", form=form)
+
 
 
 @app.route("/lugin", methods=["GET", "POST"])
