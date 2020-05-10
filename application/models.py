@@ -1,6 +1,6 @@
 from application import db
 import datetime
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 from .helpers import lookup
 import decimal
 from flask import flash
@@ -48,6 +48,28 @@ class User(db.Model):
             return None
         else:
             return user
+
+    @classmethod
+    def verify(cls, username, password):
+        """ Sets username, user ID and cash in session if username and passwords match\n
+        Returns user"""
+        # Ensure username exists and password is correct
+        if cls.get(username):
+            user = cls.get(username)
+
+            # Username exists, check password hash:
+            if check_password_hash(user.hash, password):
+                # Hash was correct - log user in
+                print("verify: hash and password match!")
+                return user
+            else:
+                # User exists but password is incorrect
+                print("verify: hash and password didn't match")
+                return None
+        else:
+            # User does not exist
+            print("verify: User.get returned None")
+            return None
 
     # Methods for instantiated objects
     def amountOwned(self, symbol):

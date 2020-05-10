@@ -1,5 +1,4 @@
-# Helpers is being used by models and dbhelpers and must not import models or
-# dbhelpers (because it will create circular import)
+# Helpers is being used by models
 # Helpers so far handles session, decorators for views and stock API
 
 from application import app

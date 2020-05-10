@@ -2,7 +2,6 @@ from application import app
 from flask import session, request, redirect, render_template, flash, jsonify, url_for
 from .helpers import login_required, apology, lookup, usd, \
     clearSessionKeepFlash, setSessionStock
-from .dbhelpers import userVerified
 from .models import User
 from .forms import RegistrationForm, LoginForm
 from werkzeug.exceptions import default_exceptions, HTTPException, \
@@ -111,7 +110,12 @@ def login():
         username = request.form.get("username")
         password = request.form.get("password")
 
-        if userVerified(username, password):
+        # Verify user and store necessary session vars
+        user = User.verify(username, password)
+        if user:
+            session["user_id"] = user.id
+            session["username"] = user.username
+            session["cash"] = user.cash
             # Redirect user to home page
             return redirect("/")
         else:
@@ -152,48 +156,6 @@ def quote():
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
-    # Register user
-    # Forget anything user related
-    session.clear()
-
-    # User reached route via POST (as by submitting a form via POST)
-    if request.method == "POST":
-
-        form = request.form.get
-
-        # Ensure username was submitted
-        if not form("username"):
-            return apology("must provide username", 403)
-
-        # Ensure password was submitted
-        elif not form("password"):
-            return apology("must provide password", 403)
-
-        # Ensure password was confirmed
-        elif not form("password-confirm"):
-            return apology("must confirm password", 403)
-
-        # Ensure password confirmation matches
-        elif form("password") != form("password-confirm"):
-            return apology("Passwords didn't match", 403)
-
-        # Check if username is taken
-        if User.get(form("username")):
-            return apology("username taken", 403)
-        else:
-            # Insert user and hashed password into database
-            User.create(form("username"), form("password"))
-
-            flash(u"You were successfully registered", "success")
-            return redirect("/login")
-
-    # User reached route via GET (as by clicking a link or via redirect)
-    else:
-        return render_template("register.html")
-
-
-@app.route("/registur", methods=["GET", "POST"])
-def registur():
     """Register user"""
 
     form = RegistrationForm()
@@ -219,7 +181,7 @@ def registur():
 
     # User reached route via GET (as by clicking a link or via redirect)
     else:
-        return render_template("registur.html", form=form)
+        return render_template("register.html", form=form)
 
 
 
@@ -285,8 +247,6 @@ def sell():
         else:
             # User decided to sell a stock. Sell and reset "sellstock" in session
             if user.sell(session["sellstock"]["symbol"], session["sellstock"]["amount"]):
-                flash(u"Sold {} {}".format(
-                    session["sellstock"]["amount"], session["sellstock"]["name"]), "success")
                 session["sellstock"] = {}
                 session["cash"] = user.cash
             else:
