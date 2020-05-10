@@ -1,6 +1,6 @@
 """
 Stuff needs to be filled out correctly. This is an example file. The app uses
-config.py in this directory.
+cs50ide-config.py in this directory.
 """
 from tempfile import mkdtemp
 

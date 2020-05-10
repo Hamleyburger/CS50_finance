@@ -12,8 +12,8 @@ from flask_sqlalchemy import SQLAlchemy
 app = Flask(__name__)
 
 
-# All configs are taken from object in config.py
-app.config.from_object("config.DevelopmentConfig")
+# All configs are taken from object in cs50ide-config.py
+app.config.from_object("cs50ide-config.DevelopmentConfig")
 
 
 # Instantiate Session
