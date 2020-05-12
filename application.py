@@ -1,7 +1,5 @@
 """
-This is the master version of CS50 Finance. This does not depend on CS50 IDE
-This comment is added to master after CS50 IDE branch was made
-No This comment was.
+This is the CS50 IDE version of Finance
 """
 
 from application import app
