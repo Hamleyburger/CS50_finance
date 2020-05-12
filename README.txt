@@ -2,13 +2,11 @@ There are two versions of my solution for CS50 Finance.
 
 The version that will be running from a remote server for accessing from my portfolio, and the one that will be uploaded to CS50 as an assignment submission, running from CS50 IDE.
 
-This version is the master version. That mostly means that there are some slight changes in the config file. The database is named differently, the config file is named differently, the config file is kept private (not committed to git) in the
-master version, and the secret keys are different.
+This version is the CS50 IDE version. That mostly means that there are some slight changes in the config file. The database is named differently, the config file is named differently, the config file for CS50 IDE is public and the secret keys are different.
 
 
 This was the assignment specification:
 https://cs50.harvard.edu/x/2020/tracks/web/finance/
-
 ____________________________________________________________________________________
 Specification
 register
