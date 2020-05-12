@@ -195,7 +195,7 @@ def lugin():
 @login_required
 def sell():
     """Sell shares of stock"""
-    """TODO: 
+    """TODO:
     if get:
         define a list of owned stocks containing: Symbol, name, price, amount owned
         render template sell
