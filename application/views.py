@@ -158,16 +158,13 @@ def quote():
 def register():
     """Register user"""
 
-    form = RegistrationForm()
     # Forget anything user related
     session.clear()
 
-    # User reached route via POST (as by submitting a form via POST)
-    if request.method == "POST":
-
-        if form.validate_on_submit():
-            flash(f"account created for {form.username.data}!", "success")
-
+    form = RegistrationForm()
+    # use Flask-WTF's validation:
+    print(form.validate_on_submit())
+    if form.validate_on_submit():
 
         # Check if username is taken
         if User.get(form.username.data):
@@ -175,13 +172,11 @@ def register():
         else:
             # Insert user and hashed password into database
             User.create(form.username.data, form.password.data)
-
-            flash(u"You were successfully registered", "success")
+            flash(f"account created for {form.username.data}!", "success")
             return redirect("/login")
+    print(form.username.errors)
+    return render_template("register.html", form=form)
 
-    # User reached route via GET (as by clicking a link or via redirect)
-    else:
-        return render_template("register.html", form=form)
 
 
 
