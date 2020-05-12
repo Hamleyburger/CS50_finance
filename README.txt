@@ -6,7 +6,8 @@ This version is the CS50 IDE version. That mostly means that there are some slig
 
 
 This was the assignment specification:
-https://cs50.harvard.edu/x/2020/tracks/web/finance/
+link: https://cs50.harvard.edu/x/2020/tracks/web/finance/
+
 ____________________________________________________________________________________
 Specification
 register
