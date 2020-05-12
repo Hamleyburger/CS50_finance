@@ -7,7 +7,7 @@ master version, and the secret keys are different.
 
 
 This was the assignment specification:
-https://cs50.harvard.edu/x/2020/tracks/web/finance/
+link: https://cs50.harvard.edu/x/2020/tracks/web/finance/
 
 ____________________________________________________________________________________
 Specification
