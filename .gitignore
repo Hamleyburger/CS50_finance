@@ -2,5 +2,5 @@ config.py
 hash.py
 .vscode
 *.pyc
-venv/
-__pycache__
+venv/*
+__pycache__*
