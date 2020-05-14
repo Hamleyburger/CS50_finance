@@ -188,6 +188,7 @@ def lugin():
     clearSessionKeepFlash()
 
     form = LoginForm()
+    print(form.validate_on_submit())
     return render_template("lugin.html", title="Login", form=form)
 
 

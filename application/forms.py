@@ -23,7 +23,7 @@ class LoginForm(FlaskForm):
     username = StringField("Username", validators=[
                            DataRequired(), Length(min=4, max=30)])
     password = PasswordField("Password", validators=[
-                             DataRequired(), Length(min=8)])
+                             DataRequired(), Length(min=8, max=30)])
     remember = BooleanField("Remember me")
     submit = SubmitField("Login")
 
