@@ -3,18 +3,18 @@ from wtforms import StringField, PasswordField, SubmitField, BooleanField
 from wtforms.validators import DataRequired, Length, EqualTo, ValidationError
 from .models import User
 
+
 def uniqueUser(form, field):
     if User.get(field.data):
+        print("uniqueUser failed")
         raise ValidationError('Sorry. That name is already taken')
+
 
 class RegistrationForm(FlaskForm):
     # First argument will be name and will be used as label
-    username = StringField("Username", validators=[
-                           DataRequired(), Length(min=4, max=30), uniqueUser])
-    password = PasswordField("Password", validators=[
-                             DataRequired(), Length(min=8, max=30)])
-    confirm_password = PasswordField("Confirm password", validators=[
-        DataRequired(), Length(min=8, max=30), EqualTo("password")])
+    username = StringField("Username", validators=[DataRequired(), Length(min=4, max=30), uniqueUser])
+    password = PasswordField("Password", validators=[DataRequired(), Length(min=8, max=30)])
+    confirm_password = PasswordField("Confirm password", validators=[DataRequired(), Length(min=8, max=30), EqualTo("password")])
     submit = SubmitField("Register")
 
 

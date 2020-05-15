@@ -162,20 +162,27 @@ def register():
     session.clear()
 
     form = RegistrationForm()
-    # use Flask-WTF's validation:
-    print(form.validate_on_submit())
-    if form.validate_on_submit():
-
-        # Check if username is taken
-        if User.get(form.username.data):
-            return apology("username taken", 403)
-        else:
+    if request.method == "POST":
+        # use Flask-WTF's validation:
+        print(form.username.data)
+        print(form.password.data)
+        print(form.confirm_password.data)
+        print(form.errors)
+        print("is submitted: {}".format(form.is_submitted()))
+        if form.validate_on_submit():
+            print("validated on submit!")
             # Insert user and hashed password into database
             User.create(form.username.data, form.password.data)
             flash(f"account created for {form.username.data}!", "success")
             return redirect("/login")
-    print(form.username.errors)
+        print("validate on submit: {}".format(form.validate_on_submit()))
+        print(form.username.errors)
+        print(form.password.errors)
     return render_template("register.html", form=form)
+
+
+
+
 
 
 
