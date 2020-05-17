@@ -7,7 +7,7 @@
 {% block main %}
 <div class="content-section">
     <! --insert novalidate as attribute if you only want to user server side validation-->
-        <form onsubmit="return validateForm(this);" method="POST" action="" novalidate>
+        <form onsubmit="return validateRegister(this);" method="POST" action="" novalidate>
             {{ form.hidden_tag() }}
             <fieldset class="form-group" style="text-align: left;">
                 <legend class="border-bottom mb-4">Register a new user</legend>
@@ -58,6 +58,7 @@
             </div>
         </form>
 </div>
+
 
 
 {% endblock %}
