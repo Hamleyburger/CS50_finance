@@ -88,44 +88,6 @@ def history():
     return apology("TODO")
 
 
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    """Log user in"""
-    print(session)
-    # Forget any user_id
-    clearSessionExcept("_flashes", "csrf_token")
-
-    # User reached route via POST (as by submitting a form via POST)
-    if request.method == "POST":
-
-        # Ensure username was submitted
-        if not request.form.get("username"):
-            return apology("must provide username", 403)
-
-        # Ensure password was submitted
-        elif not request.form.get("password"):
-            return apology("must provide password", 403)
-
-        # Query database for username
-        username = request.form.get("username")
-        password = request.form.get("password")
-
-        # Verify user and store necessary session vars
-        user = User.verify(username, password)
-        if user:
-            session["user_id"] = user.id
-            session["username"] = user.username
-            session["cash"] = user.cash
-            # Redirect user to home page
-            return redirect("/")
-        else:
-            return apology("invalid username or password", 403)
-
-    # User reached route via GET (as by clicking a link or via redirect)
-    else:
-        return render_template("login.html")
-
-
 @app.route("/logout")
 def logout():
     """Log user out"""
@@ -172,8 +134,8 @@ def register():
     return render_template("register.html", form=form)
 
 
-@app.route("/lugin", methods=["GET", "POST"])
-def lugin():
+@app.route("/login", methods=["GET", "POST"])
+def login():
     """Log user in"""
     # Clear session from previous login
     clearSessionExcept("_flashes", "csrf_token")
@@ -193,9 +155,9 @@ def lugin():
                 return redirect("/")
             else:
                 flash(u"Wrong username or password", "danger")
-                return render_template("lugin.html", form=form), 403
+                return render_template("login.html", form=form), 403
 
-    return render_template("lugin.html", form=form)
+    return render_template("login.html", form=form)
 
 
 
