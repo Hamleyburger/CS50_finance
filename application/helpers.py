@@ -73,29 +73,19 @@ def usd(value):
     return f"${value:,.2f}"
 
 
-def clearSessionKeepFlash():
-    """ Clears the session for everything except the flask flash message """
-    # Forget any user_id, but maintain message flash if present
-    if session.get("_flashes"):
-        flashes = session.get("_flashes")
-        session.clear()
-        session["_flashes"] = flashes
-    else:
-        session.clear()
-
-
-"""
-instantiate or refresh stock info and sell/buy amount in session.
-"keyString" is the session key
-"""
+def clearSessionExcept(*argv):
+    """ Pops any item from session that is not provided as string argument.\n
+    csrf_token must be preserved for wtforms validation to work.\n
+    _flashes must be preserved for messages to be flashed """
+    for key in list(session):
+        if key not in argv:
+            session.pop(key)
 
 
 def setSessionStock(keyString, symbol=None, amount=None):
-    """
-    keyString is required: The key for the session entry for stock info.\n
+    """ keyString is required: The key for the session entry for stock info.\n
     symbol is optional: if passed in session is repopulated\n
-    amount is optional: if passed in amount of stock in question is changed.
-    """
+    amount is optional: if passed in amount of stock in question is changed. """
 
     if keyString not in session:
         # if key not in session, make it exist to be searchable

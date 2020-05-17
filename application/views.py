@@ -1,7 +1,7 @@
 from application import app
 from flask import session, request, redirect, render_template, flash, jsonify, url_for
 from .helpers import login_required, apology, lookup, usd, \
-    clearSessionKeepFlash, setSessionStock
+    setSessionStock, clearSessionExcept
 from .models import User
 from .forms import RegistrationForm, LoginForm
 from werkzeug.exceptions import default_exceptions, HTTPException, \
@@ -91,9 +91,9 @@ def history():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     """Log user in"""
-
+    print(session)
     # Forget any user_id
-    clearSessionKeepFlash()
+    clearSessionExcept("_flashes", "csrf_token")
 
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
@@ -157,46 +157,46 @@ def quote():
 @app.route("/register", methods=["GET", "POST"])
 def register():
     """Register user"""
-
-    # Forget anything user related
-    session.clear()
+    # Clear session from previous login
+    clearSessionExcept("csrf_token", "_flashes")
 
     form = RegistrationForm()
     if request.method == "POST":
         # use Flask-WTF's validation:
-        print(form.username.data)
-        print(form.password.data)
-        print(form.confirm_password.data)
-        print(form.errors)
-        print("is submitted: {}".format(form.is_submitted()))
         if form.validate_on_submit():
-            print("validated on submit!")
             # Insert user and hashed password into database
             User.create(form.username.data, form.password.data)
             flash(f"account created for {form.username.data}!", "success")
             return redirect("/login")
-        print("validate on submit: {}".format(form.validate_on_submit()))
-        print(form.username.errors)
-        print(form.password.errors)
+
     return render_template("register.html", form=form)
-
-
-
-
-
-
 
 
 @app.route("/lugin", methods=["GET", "POST"])
 def lugin():
     """Log user in"""
-
-    # Forget any user_id
-    clearSessionKeepFlash()
+    # Clear session from previous login
+    clearSessionExcept("_flashes", "csrf_token")
 
     form = LoginForm()
-    print(form.validate_on_submit())
-    return render_template("lugin.html", title="Login", form=form)
+    if request.method == "POST":
+        # use Flask-WTF's validation:
+        if form.validate_on_submit():
+            username = form.username.data
+            password = form.password.data
+            user = User.verify(username, password)
+            if user:
+                session["user_id"] = user.id
+                session["username"] = user.username
+                session["cash"] = user.cash
+                # Redirect user to home page
+                return redirect("/")
+            else:
+                flash(u"Wrong username or password", "danger")
+                return render_template("lugin.html", form=form), 403
+
+    return render_template("lugin.html", form=form)
+
 
 
 @app.route("/sell", methods=["GET", "POST"])
