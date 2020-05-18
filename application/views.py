@@ -127,10 +127,12 @@ def register():
         # use Flask-WTF's validation:
         if form.validate_on_submit():
             # Insert user and hashed password into database
-            User.create(form.username.data, form.password.data)
-            flash(f"account created for {form.username.data}!", "success")
-            return redirect("/login")
-
+            try:
+                User.create(form.username.data, form.password.data)
+                flash(f"account created for {form.username.data}!", "success")
+                return redirect("/login")
+            except Exception:
+                flash(u"Something went wrong.", "danger")
     return render_template("register.html", form=form)
 
 
@@ -141,21 +143,15 @@ def login():
     clearSessionExcept("_flashes", "csrf_token")
 
     form = LoginForm()
+
     if request.method == "POST":
         # use Flask-WTF's validation:
         if form.validate_on_submit():
-            username = form.username.data
-            password = form.password.data
-            try:
-                user = User.verify(username, password)
-                session["user_id"] = user.id
-                session["username"] = user.username
-                session["cash"] = user.cash
-                # Redirect user to home page
-                return redirect("/")
-            except Exception as e:
-                flash(e, "danger")    
-                return render_template("login.html", form=form), 403
+            return redirect("/")
+        else:
+            return render_template("login.html", form=form), 403
+
+    # User GET to get here
     return render_template("login.html", form=form)
 
 

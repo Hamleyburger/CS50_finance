@@ -4,6 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from .helpers import lookup
 import decimal
 from flask import flash
+from .exceptions import userNotFoundError, invaldPasswordError
 
 
 class User(db.Model):
@@ -29,15 +30,20 @@ class User(db.Model):
     # Methods for class in general
     @classmethod
     def create(cls, username, password):
-        """ Hashes password and inserts username and password into Users table.\n
-        also returns the new user object"""
+        """ Inserts user and hash to database.\n
+        Assumes that username and passwords are valid!!
+        returns the new user"""
         # Insert user and hashed password into database
-        hash = generate_password_hash(password)
-        user = cls(username=username,
-                   hash=hash)
-        db.session.add(user)
-        db.session.commit()
-        return user
+        try:
+            hash = generate_password_hash(password)
+            user = cls(username=username,
+                    hash=hash)
+            db.session.add(user)
+            db.session.commit()
+            return user
+        except Exception as e:
+            print(e)
+            raise
 
     @classmethod
     def get(cls, username):
@@ -57,9 +63,9 @@ class User(db.Model):
                 # Hash was correct - log user in
                 return user
             else:
-                raise Exception("Incorrect password")
+                raise invaldPasswordError("Incorrect password")
         else:
-            raise Exception(f'User "{username}" not found')
+            raise userNotFoundError(f'User "{username}" not found')
 
     # Methods for instantiated objects
     def amountOwned(self, symbol):
@@ -75,7 +81,7 @@ class User(db.Model):
             return 0
 
     def sell(self, symbol, amount):
-        """"Returns true if success. """
+        """Returns true if success. """
         # Check that amount >0
         if int(amount) > 0:
             # Check that user owns this stock and enough
