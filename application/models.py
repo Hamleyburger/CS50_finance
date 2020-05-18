@@ -43,33 +43,23 @@ class User(db.Model):
     def get(cls, username):
         """This method returns user if exists, otherwise None"""
         user = cls.query.filter_by(username=username).first()
-        if not user:
-            print("user.get: query returned None")
-            return None
-        else:
-            return user
+        return user
 
     @classmethod
     def verify(cls, username, password):
         """ Sets username, user ID and cash in session if username and passwords match\n
         Returns user"""
         # Ensure username exists and password is correct
-        if cls.get(username):
-            user = cls.get(username)
-
+        user = cls.get(username)
+        if user:
             # Username exists, check password hash:
             if check_password_hash(user.hash, password):
                 # Hash was correct - log user in
-                print("verify: hash and password match!")
                 return user
             else:
-                # User exists but password is incorrect
-                print("verify: hash and password didn't match")
-                return None
+                raise Exception("Incorrect password")
         else:
-            # User does not exist
-            print("verify: User.get returned None")
-            return None
+            raise Exception(f'User "{username}" not found')
 
     # Methods for instantiated objects
     def amountOwned(self, symbol):

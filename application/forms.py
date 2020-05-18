@@ -6,8 +6,7 @@ from .models import User
 
 def uniqueUser(form, field):
     if User.get(field.data):
-        print("uniqueUser failed")
-        raise ValidationError('Sorry. That name is already taken')
+        raise ValidationError('Username is already taken')
 
 
 class RegistrationForm(FlaskForm):

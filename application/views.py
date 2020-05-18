@@ -146,17 +146,16 @@ def login():
         if form.validate_on_submit():
             username = form.username.data
             password = form.password.data
-            user = User.verify(username, password)
-            if user:
+            try:
+                user = User.verify(username, password)
                 session["user_id"] = user.id
                 session["username"] = user.username
                 session["cash"] = user.cash
                 # Redirect user to home page
                 return redirect("/")
-            else:
-                flash(u"Wrong username or password", "danger")
+            except Exception as e:
+                flash(e, "danger")    
                 return render_template("login.html", form=form), 403
-
     return render_template("login.html", form=form)
 
 
