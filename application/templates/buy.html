@@ -2,133 +2,94 @@
 %}
 
 <div>
-  <form action="/buy" method="post">
-    <! –– search bar ––  >
-    <div class="input-group">
-      <input
-        type="text"
-        class="form-control"
-        placeholder="Stock symbol"
-        name="symbol"
-        autofocus
-        autocomplete="off"
-      />
-      <div class="input-group-append">
-        <! -- search button -->
-        <button
-          class="mybtn btn btn-outline-secondary"
-          type="submit"
-          name="submit-button"
-          value="search"
-        >
-          <i class="fas fa-search"></i>
-        </button>
-      </div>
-    </div>
-    <! -- end of searchbar -- >
+    <form action="/buy" method="post">
+        <! –– search bar ––>
+            <div class="input-group">
+                <input id="symbolInput" type="text" class="form-control" placeholder="Stock symbol" name="symbol"
+                    autofocus autocomplete="off" />
+                <div class="input-group-append">
+                    <! -- search button -->
+                        <button id="symbolBtn" class="mybtn btn btn-outline-secondary" type="submit"
+                            name="submit-button" value="search">
+                            <i class="fas fa-search"></i>
+                        </button>
+                </div>
+            </div>
+            <! -- end of searchbar -->
 
-    <! -- product containter, only shows if there's a valid stock in flask session -- >
-    {% if ("buystock" not in session) %}
-    <!-- User still hasn't posted anything. -->
-    {% elif "symbol" in session["buystock"] %}
-    <!-- User has searched for a valid stock. -->
-    {% set buyDict = session["buystock"] %}
-    <!-- buyDict is the dictionary with stock information. -->
-    <div class="container-fluid product-container">
-      <!-- PRODUCT -->
-      <div class="container-fluid">
-        <div class="row">
-          <div
-            class="col-12 col-sm-6"
-            style="padding-right: 0; padding-left: 0;"
-          >
-            <h4 class="product-name">
-              <strong>{{ buyDict["name"] }}</strong>
-            </h4>
-            <h4>
-              <small>{{ buyDict["symbol"] }}</small>
-            </h4>
-          </div>
-          <div
-            class="col-12 col-sm-6 text-right"
-            style="
+                <! -- product containter, only shows if there's a valid stock in flask session -->
+                    {% if ("buystock" not in session) %}
+                    <!-- User still hasn't posted anything. -->
+                    {% elif "symbol" in session["buystock"] %}
+                    <!-- User has searched for a valid stock. -->
+                    {% set buyDict = session["buystock"] %}
+                    <!-- buyDict is the dictionary with stock information. -->
+                    <div class="container-fluid product-container">
+                        <!-- PRODUCT -->
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-12 col-sm-6" style="padding-right: 0; padding-left: 0;">
+                                    <h4 class="product-name">
+                                        <strong>{{ buyDict["name"] }}</strong>
+                                    </h4>
+                                    <h4>
+                                        <small>{{ buyDict["symbol"] }}</small>
+                                    </h4>
+                                </div>
+                                <div class="col-12 col-sm-6 text-right" style="
               margin-top: auto;
               padding-right: 0;
               padding-left: 0;
               padding-top: 10px;
-            "
-          >
-            <div
-              style="
+            ">
+                                    <div style="
                 display: flex;
                 justify-content: flex-end;
                 align-items: center;
-              "
-            >
-              <span>
-                <strong
-                  >{{ buyDict["price"] }}
-                  <span class="text-muted" style="padding-right: 4px;"
-                    >x</span
-                  ></strong
-                >
-              </span>
+              ">
+                                        <span>
+                                            <strong>{{ buyDict["price"] }}
+                                                <span class="text-muted" style="padding-right: 4px;">x</span></strong>
+                                        </span>
 
-              <div class="input-group float-right" style="max-width: 100px;">
-                <input
-                  class="form-control"
-                  type="number"
-                  step="1"
-                  max="99"
-                  min="1"
-                  value="{{ session['buystock']['amount'] }}"
-                  title="Qty"
-                  size="4"
-                  name="amount"
-                  style="width: 58px;"
-                />
-                <div class="input-group-append">
-                  <! -- refresh button -- >
-                  <button
-                    type="submit"
-                    name="submit-button"
-                    value="refresh"
-                    class="mybtn btn btn-outline-secondary"
-                  >
-                    <i class="fas fa-sync-alt"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <hr />
-      <!-- END PRODUCT -->
-    </div>
-    <div class="card-footer">
-      <div class="pull-right" style="margin: 10px;">
-        <! -- buy button -->
-        <button
-          class="mybtn btn btn-primary"
-          type="submit"
-          name="submit-button"
-          value="buy"
-        >
-          Buy
-        </button>
-        <div class="pull-right" style="margin: 5px;">
-          Total price:
-          <b>
-            {% if "buytotal" in buyDict %} {{
+                                        <div class="input-group float-right" style="max-width: 100px;">
+                                            <input id="amountInput" class="form-control" type="number" step="1" max="99"
+                                                min="1" value="{{ session['buystock']['amount'] }}" title="Qty" size="4"
+                                                name="amount" style="width: 58px;" />
+                                            <div class="input-group-append">
+                                                <! -- refresh button -->
+                                                    <button id="amountBtn" type="submit" name="submit-button"
+                                                        value="refresh" class="mybtn btn btn-outline-secondary">
+                                                        <i class="fas fa-sync-alt"></i>
+                                                    </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr />
+                        <!-- END PRODUCT -->
+                    </div>
+                    <div class="card-footer">
+                        <div class="pull-right" style="margin: 10px;">
+                            <! -- buy button -->
+                                <button class="mybtn btn btn-primary" type="submit" name="submit-button" value="buy">
+                                    Buy
+                                </button>
+                                <div class="pull-right" style="margin: 5px;">
+                                    Total price:
+                                    <b>
+                                        {% if "buytotal" in buyDict %} {{
             "$%.2f"|format(buyDict["buytotal"]) }} {% endif %}
-          </b>
-        </div>
-      </div>
-    </div>
+                                    </b>
+                                </div>
+                        </div>
+                    </div>
 
-    {% endif %}
-  </form>
+                    {% endif %}
+    </form>
 </div>
+
 
 {% endblock %}
