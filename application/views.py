@@ -88,44 +88,6 @@ def history():
     return apology("TODO")
 
 
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    """Log user in"""
-    print(session)
-    # Forget any user_id
-    clearSessionExcept("_flashes", "csrf_token")
-
-    # User reached route via POST (as by submitting a form via POST)
-    if request.method == "POST":
-
-        # Ensure username was submitted
-        if not request.form.get("username"):
-            return apology("must provide username", 403)
-
-        # Ensure password was submitted
-        elif not request.form.get("password"):
-            return apology("must provide password", 403)
-
-        # Query database for username
-        username = request.form.get("username")
-        password = request.form.get("password")
-
-        # Verify user and store necessary session vars
-        user = User.verify(username, password)
-        if user:
-            session["user_id"] = user.id
-            session["username"] = user.username
-            session["cash"] = user.cash
-            # Redirect user to home page
-            return redirect("/")
-        else:
-            return apology("invalid username or password", 403)
-
-    # User reached route via GET (as by clicking a link or via redirect)
-    else:
-        return render_template("login.html")
-
-
 @app.route("/logout")
 def logout():
     """Log user out"""
@@ -165,37 +127,32 @@ def register():
         # use Flask-WTF's validation:
         if form.validate_on_submit():
             # Insert user and hashed password into database
-            User.create(form.username.data, form.password.data)
-            flash(f"account created for {form.username.data}!", "success")
-            return redirect("/login")
-
+            try:
+                User.create(form.username.data, form.password.data)
+                flash(f"account created for {form.username.data}!", "success")
+                return redirect("/login")
+            except Exception:
+                flash(u"Something went wrong.", "danger")
     return render_template("register.html", form=form)
 
 
-@app.route("/lugin", methods=["GET", "POST"])
-def lugin():
+@app.route("/login", methods=["GET", "POST"])
+def login():
     """Log user in"""
     # Clear session from previous login
     clearSessionExcept("_flashes", "csrf_token")
 
     form = LoginForm()
+
     if request.method == "POST":
         # use Flask-WTF's validation:
         if form.validate_on_submit():
-            username = form.username.data
-            password = form.password.data
-            user = User.verify(username, password)
-            if user:
-                session["user_id"] = user.id
-                session["username"] = user.username
-                session["cash"] = user.cash
-                # Redirect user to home page
-                return redirect("/")
-            else:
-                flash(u"Wrong username or password", "danger")
-                return render_template("lugin.html", form=form), 403
+            return redirect("/")
+        else:
+            return render_template("login.html", form=form), 403
 
-    return render_template("lugin.html", form=form)
+    # User GET to get here
+    return render_template("login.html", form=form)
 
 
 
@@ -203,21 +160,6 @@ def lugin():
 @login_required
 def sell():
     """Sell shares of stock"""
-    """TODO:
-    if get:
-        define a list of owned stocks containing: Symbol, name, price, amount owned
-        render template sell
-    if post:
-        search must be searching list of owned stocks for filtering
-        search can redefine the list which will only be reset at get or after sell.
-        search does NOT define what stock is being sold.
-        clicking an item opens a sell modal.
-        make a "reset search" button
-
-        Sell dialogue (like buy stock):
-        refresh: refreshes amount of sell stocks
-        sell button sells.
-    """
 
     if request.method == "POST":
 
@@ -265,6 +207,34 @@ def sell():
     # method is get
     else:
         return render_template("/sell.html")
+
+
+@app.route("/hell", methods=["GET", "POST"])
+@app.route("/hell/<symbol>", methods=["GET", "POST"])
+#@login_required
+def hell(symbol=None):
+
+    """Sell shares of stock"""
+    session["user_id"] = 1
+    user = User.query.filter_by(id=session["user_id"]).first_or_404()
+    session["username"] = user.username
+    session["cash"] = user.cash
+
+    stocks = user.ownedStocks()
+
+    if not symbol:
+        # Show a list where user can click and choose symbol form its own collection
+
+        return render_template("/hell.html", stocks=stocks)
+
+    else:
+        # Allow user to refresh amount, sell and go back to "symbol=None".
+        return render_template("/hell.html", stocks=stocks)
+
+
+
+
+
 
 
 def errorhandler(e):

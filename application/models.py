@@ -4,6 +4,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from .helpers import lookup
 import decimal
 from flask import flash
+from .exceptions import userNotFoundError, invaldPasswordError
+from collections import namedtuple
 
 
 class User(db.Model):
@@ -29,49 +31,62 @@ class User(db.Model):
     # Methods for class in general
     @classmethod
     def create(cls, username, password):
-        """ Hashes password and inserts username and password into Users table.\n
-        also returns the new user object"""
+        """ Inserts user and hash to database.\n
+        Assumes that username and passwords are valid!!
+        returns the new user"""
         # Insert user and hashed password into database
-        hash = generate_password_hash(password)
-        user = cls(username=username,
-                   hash=hash)
-        db.session.add(user)
-        db.session.commit()
-        return user
+        try:
+            hash = generate_password_hash(password)
+            user = cls(username=username,
+                    hash=hash)
+            db.session.add(user)
+            db.session.commit()
+            return user
+        except Exception as e:
+            print(e)
+            raise
 
     @classmethod
     def get(cls, username):
         """This method returns user if exists, otherwise None"""
         user = cls.query.filter_by(username=username).first()
-        if not user:
-            print("user.get: query returned None")
-            return None
-        else:
-            return user
+        return user
 
     @classmethod
     def verify(cls, username, password):
-        """ Sets username, user ID and cash in session if username and passwords match\n
-        Returns user"""
+        """ Sets username, user ID and cash in session if username and\n
+        passwords match. Returns user """
         # Ensure username exists and password is correct
-        if cls.get(username):
-            user = cls.get(username)
-
+        user = cls.get(username)
+        if user:
             # Username exists, check password hash:
             if check_password_hash(user.hash, password):
                 # Hash was correct - log user in
-                print("verify: hash and password match!")
                 return user
             else:
-                # User exists but password is incorrect
-                print("verify: hash and password didn't match")
-                return None
+                raise invaldPasswordError("Incorrect password")
         else:
-            # User does not exist
-            print("verify: User.get returned None")
-            return None
+            raise userNotFoundError(f'User "{username}" not found')
 
     # Methods for instantiated objects
+    def ownedStocks(self):
+        """
+        Gets user's owned stocks and returns list of named tuples \n
+        with name, symbol, amount and current price pr. unit
+        """
+        ownedStocks = db.session.query(Stock.name, Stock.symbol, Owned.amount).join(Owned).filter(Owned.user_id == self.id).all()
+        stocksWithPrices = []
+        # Named tuple returns a nice, readable object-like tuple for easy access
+        StockTuple = namedtuple("stockTuple", ["name", "symbol", "amount", "price"])
+
+        for stock in ownedStocks:
+            price = lookup(stock.symbol)["price"]
+            stockTuple = StockTuple(stock.name, stock.symbol, stock.amount, price)
+            stocksWithPrices.append(stockTuple)
+
+        return stocksWithPrices
+
+
     def amountOwned(self, symbol):
         """Expects valid stock symbol.\n
         Returns the amount of given stock (from symbol) owned or None\n
@@ -85,7 +100,7 @@ class User(db.Model):
             return 0
 
     def sell(self, symbol, amount):
-        """"Returns true if success. """
+        """Returns true if success. """
         # Check that amount >0
         if int(amount) > 0:
             # Check that user owns this stock and enough
