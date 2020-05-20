@@ -160,21 +160,6 @@ def login():
 @login_required
 def sell():
     """Sell shares of stock"""
-    """TODO: 
-    if get:
-        define a list of owned stocks containing: Symbol, name, price, amount owned
-        render template sell
-    if post:
-        search must be searching list of owned stocks for filtering
-        search can redefine the list which will only be reset at get or after sell.
-        search does NOT define what stock is being sold.
-        clicking an item opens a sell modal.
-        make a "reset search" button
-
-        Sell dialogue (like buy stock):
-        refresh: refreshes amount of sell stocks
-        sell button sells.
-    """
 
     if request.method == "POST":
 
@@ -222,6 +207,34 @@ def sell():
     # method is get
     else:
         return render_template("/sell.html")
+
+
+@app.route("/hell", methods=["GET", "POST"])
+@app.route("/hell/<symbol>", methods=["GET", "POST"])
+#@login_required
+def hell(symbol=None):
+
+    """Sell shares of stock"""
+    session["user_id"] = 1
+    user = User.query.filter_by(id=session["user_id"]).first_or_404()
+    session["username"] = user.username
+    session["cash"] = user.cash
+    
+    stocks = user.ownedStocks()
+    
+    if not symbol:
+        # Show a list where user can click and choose symbol form its own collection
+
+        return render_template("/hell.html", stocks=stocks)
+
+    else:
+        # Allow user to refresh amount, sell and go back to "symbol=None".
+        return render_template("/hell.html", stocks=stocks)
+
+
+
+
+
 
 
 def errorhandler(e):

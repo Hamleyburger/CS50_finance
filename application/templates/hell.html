@@ -1,0 +1,44 @@
+{% extends "layout.html" %} {% block title %} Sell {% endblock %} {% block main
+%}
+
+<! -- product containter, only shows if there's a valid stock in flask session -->
+    {% if (stocks == []) %}
+    <!-- User still hasn't posted anything. -->
+    <p>You don't own any stocks</p>
+    {% else %}
+    <!-- User has searched for a valid stock. -->
+    <!-- sellDict is the dictionary with stock information. -->
+    <div class="container-fluid product-container">
+        {% for stock in stocks %}
+        <!-- PRODUCT -->
+        <div class="container-fluid">
+            <div class="row">
+
+                <div class="col-12 col-sm-7" style="height: 3em; align-self:">
+                    <h4 class="product-name">
+                        <strong>{{ stock.name }}</strong>
+                    </h4>
+                </div>
+
+                <div class="col-12 col-sm-2" style="height: 3em;">
+                    <h4>
+                        <small>{{ stock.symbol }}</small>
+                    </h4>
+                </div>
+
+                <div class="col-12 col-sm-3 text-right" style="height: 3em;">
+
+                    <h4>
+                        ${{ stock.price }}
+                    </h4>
+
+                </div>
+            </div>
+        </div>
+        <hr />
+        <!-- END PRODUCT -->
+        {% endfor %}
+    </div>
+
+    {% endif %}
+    {% endblock %}

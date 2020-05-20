@@ -5,6 +5,7 @@ from .helpers import lookup
 import decimal
 from flask import flash
 from .exceptions import userNotFoundError, invaldPasswordError
+from collections import namedtuple
 
 
 class User(db.Model):
@@ -53,8 +54,8 @@ class User(db.Model):
 
     @classmethod
     def verify(cls, username, password):
-        """ Sets username, user ID and cash in session if username and passwords match\n
-        Returns user"""
+        """ Sets username, user ID and cash in session if username and\n
+        passwords match. Returns user """
         # Ensure username exists and password is correct
         user = cls.get(username)
         if user:
@@ -68,6 +69,24 @@ class User(db.Model):
             raise userNotFoundError(f'User "{username}" not found')
 
     # Methods for instantiated objects
+    def ownedStocks(self):
+        """
+        Gets user's owned stocks and returns list of named tuples \n
+        with name, symbol, amount and current price pr. unit
+        """
+        ownedStocks = db.session.query(Stock.name, Stock.symbol, Owned.amount).join(Owned).filter(Owned.user_id == self.id).all()
+        stocksWithPrices = []
+        # Named tuple returns a nice, readable object-like tuple for easy access
+        StockTuple = namedtuple("stockTuple", ["name", "symbol", "amount", "price"])
+
+        for stock in ownedStocks:
+            price = lookup(stock.symbol)["price"]
+            stockTuple = StockTuple(stock.name, stock.symbol, stock.amount, price)
+            stocksWithPrices.append(stockTuple)
+
+        return stocksWithPrices
+
+
     def amountOwned(self, symbol):
         """Expects valid stock symbol.\n
         Returns the amount of given stock (from symbol) owned or None\n
