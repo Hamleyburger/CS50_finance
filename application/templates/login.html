@@ -1,17 +1,48 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Log In
+{{ title }}
 {% endblock %}
 
 {% block main %}
-    <form action="/login" method="post">
-        <div class="form-group">
-            <input autocomplete="off" autofocus class="form-control" name="username" placeholder="Username" type="text">
-        </div>
-        <div class="form-group">
-            <input class="form-control" name="password" placeholder="Password" type="password">
-        </div>
-        <button class="btn btn-primary" type="submit">Log In</button>
-    </form>
+<div class="content-section">
+    <! --insert novalidate as attribute if you only want to user server side validation-->
+        <form onsubmit="return validateLogin(this);" method="POST" action="" novalidate>
+            {{ form.hidden_tag() }}
+            <fieldset class="form-group" style="text-align: left;">
+                <legend id="legend" class="border-bottom mb-4"></legend>
+                <div class="form-group">
+                    {% if form.username.errors %}
+                    {{ form.username(class="form-control is-invalid", autocomplete="off", placeholder="Username") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.username.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    {{ form.username(class="form-control", autocomplete="off", autofocus=true, placeholder="Username") }}
+                    <div id="username-feedback" class="invalid-feedback"></div>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+
+                    {% if form.password.errors %}
+                    {{ form.password(class="form-control is-invalid", autocomplete="off", placeholder="Password") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.password.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    {{ form.password(class="form-control", autocomplete="off", placeholder="Password") }}
+                    <div id="password-feedback" class="invalid-feedback"></div>
+                    {% endif %}
+                </div>
+            </fieldset>
+            <div class="form-group">
+                {{ form.submit(class="btn btn-primary btn-outline-info") }}
+            </div>
+        </form>
+</div>
+
 {% endblock %}

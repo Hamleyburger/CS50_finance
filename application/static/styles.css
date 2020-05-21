@@ -54,7 +54,28 @@ main img {
 .product-container {
   padding-top: 12px;
   padding-bottom: 12px;
+  padding-left: 0;
+  padding-right: 0;
   text-align: left;
+}
+
+.product-container .selectable {
+  height: 4em;
+  -webkit-transition: background .4s ease-out;
+  transition: background .4s ease-out;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+.product-container .selectable .row {
+  min-height: 4em;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+.product-container .selectable:hover {
+  background-color: rgba(133, 251, 255, 0.301);
 }
 
 .mybtn {
@@ -66,5 +87,15 @@ main img {
 .mybtn:hover {
   background-color: #84e6ff;
   border-color: #4d7a64;
+}
+
+a {
+  color: inherit;
+  text-decoration: inherit;
+}
+
+a:hover {
+  color: inherit;
+  text-decoration: inherit;
 }
 /*# sourceMappingURL=styles.css.map */
