@@ -11,31 +11,30 @@
     <div class="container-fluid product-container">
         {% for stock in stocks %}
         <!-- PRODUCT -->
-        <div class="container-fluid">
+        <a class="selectable" href="{{ url_for('hell', symbol=stock.symbol) }}" style="display: block;">
+            <!-- since this div is an anchor tag it needs to be set to display: block to work as a div -->
             <div class="row">
 
-                <div class="col-12 col-sm-7" style="height: 3em; align-self:">
+                <div class="col-12 col-sm-7">
                     <h4 class="product-name">
                         <strong>{{ stock.name }}</strong>
                     </h4>
                 </div>
 
-                <div class="col-12 col-sm-2" style="height: 3em;">
+                <div class="col-12 col-sm-2">
                     <h4>
                         <small>{{ stock.symbol }}</small>
                     </h4>
                 </div>
 
-                <div class="col-12 col-sm-3 text-right" style="height: 3em;">
-
+                <div class="col-12 col-sm-3 text-right">
                     <h4>
                         ${{ stock.price }}
                     </h4>
-
                 </div>
             </div>
-        </div>
-        <hr />
+        </a>
+        <hr style="margin: 2px;" />
         <!-- END PRODUCT -->
         {% endfor %}
     </div>

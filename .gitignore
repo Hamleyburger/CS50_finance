@@ -4,3 +4,4 @@ hash.py
 *.pyc
 venv/*
 __pycache__*
+styles.css.map

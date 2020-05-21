@@ -221,7 +221,7 @@ def hell(symbol=None):
     session["cash"] = user.cash
     
     stocks = user.ownedStocks()
-    
+
     if not symbol:
         # Show a list where user can click and choose symbol form its own collection
 
