@@ -86,7 +86,6 @@ class User(db.Model):
 
         return stocksWithPrices
 
-
     def amountOwned(self, symbol):
         """Expects valid stock symbol.\n
         Returns the amount of given stock (from symbol) owned or None\n

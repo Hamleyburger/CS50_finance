@@ -51,14 +51,29 @@ main img {
   padding-left: 0;
   padding-right: 0;
   text-align: left;
+  & > a {
+      color: inherit;
+      text-decoration: inherit;
+      &:hover {
+          color: inherit;
+          text-decoration: inherit;
+      }
+  }
     .selectable {
-        height: 4em;
+        height: auto;
         transition: background .4s ease-out;
         padding-left: 12px;
         padding-right: 12px;
+        padding-top: 20px;
+        padding-bottom: 20px;
+        
         .row {
-            min-height: 4em;
+            // height must be set for centering to work. Now I'm using padding instead though.
+            //min-height: 4em;
             align-items: center;
+        }
+        .footnote {
+            min-height: 2em !important;
         }
     }
     .selectable:hover {
@@ -78,11 +93,3 @@ main img {
     border-color: #4d7a64;
   }
 }
-a {
-    color: inherit;
-    text-decoration: inherit;
-    &:hover {
-        color: inherit;
-        text-decoration: inherit;
-    }
-  }
