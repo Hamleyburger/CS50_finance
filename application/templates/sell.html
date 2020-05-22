@@ -1,134 +1,50 @@
 {% extends "layout.html" %} {% block title %} Sell {% endblock %} {% block main
 %}
 
-<div>
-  <form action="/sell" method="post">
-    <! –– search bar ––  >
-    <div class="input-group">
-      <input
-        type="text"
-        class="form-control"
-        placeholder="Stock symbol"
-        name="symbol"
-        autofocus
-        autocomplete="off"
-      />
-      <div class="input-group-append">
-        <! -- search button -->
-        <button
-          class="mybtn btn btn-outline-secondary"
-          type="submit"
-          name="submit-button"
-          value="search"
-        >
-          <i class="fas fa-search"></i>
-        </button>
-      </div>
-    </div>
-    <! -- end of searchbar -- >
-
-    <! -- product containter, only shows if there's a valid stock in flask session -- >
-    {% if ("sellstock" not in session) %}
+<! -- product containter, only shows if there's a valid stock in flask session -->
+    {% if (stocks == []) %}
     <!-- User still hasn't posted anything. -->
-    {% elif "symbol" in session["sellstock"] %}
+    <p>You don't own any stocks</p>
+    {% else %}
     <!-- User has searched for a valid stock. -->
-    {% set sellDict = session["sellstock"] %}
     <!-- sellDict is the dictionary with stock information. -->
     <div class="container-fluid product-container">
-      <!-- PRODUCT -->
-      <div class="container-fluid">
-        <div class="row">
-          <div
-            class="col-12 col-sm-6"
-            style="padding-right: 0; padding-left: 0;"
-          >
-            <h4 class="product-name">
-              <strong>{{ sellDict["name"] }}</strong>
-            </h4>
-            <h4>
-              <small>{{ sellDict["symbol"] }}</small>
-            </h4>
-          </div>
-          <div
-            class="col-12 col-sm-6 text-right"
-            style="
-              margin-top: auto;
-              padding-right: 0;
-              padding-left: 0;
-              padding-top: 10px;
-            "
-          >
-            <div
-              style="
-                display: flex;
-                justify-content: flex-end;
-                align-items: center;
-              "
-            >
-              <span>
-                <strong
-                  >{{ sellDict["price"] }}
-                  <span class="text-muted" style="padding-right: 4px;"
-                    >x</span
-                  ></strong
-                >
-              </span>
+        {% for stock in stocks %}
+        <!-- PRODUCT -->
+        <a class="selectable" href="{{ url_for('sell', symbol=stock.symbol) }}" style="display: block;">
+            <!-- since this div is an anchor tag it needs to be set to display: block to work as a div -->
+            <div class="row pb-4 pb-md-1">
 
-              <div class="input-group float-right" style="max-width: 100px;">
-                <input
-                  class="form-control"
-                  type="number"
-                  step="1"
-                  max="99"
-                  min="1"
-                  value="{{ session['sellstock']['amount'] }}"
-                  title="Qty"
-                  size="4"
-                  name="amount"
-                  style="width: 58px;"
-                />
-                <div class="input-group-append">
-                  <! -- refresh button -- >
-                  <button
-                    type="submit"
-                    name="submit-button"
-                    value="refresh"
-                    class="mybtn btn btn-outline-secondary"
-                  >
-                    <i class="fas fa-sync-alt"></i>
-                  </button>
+                <div class="col-12 col-sm-7">
+                    <h4 class="product-name">
+                        <strong>{{ stock.name }}</strong>
+                    </h4>
                 </div>
-              </div>
+
+                <div class="col-12 col-sm-2">
+                    <h4>
+                        <small>{{ stock.symbol }}</small>
+                    </h4>
+                </div>
+
+                <div class="col-12 col-sm-3 text-right">
+                    <strong size="2">
+                        ${{ stock.price }}
+                    </strong>
+                </div>
+
             </div>
-          </div>
-        </div>
-      </div>
-      <hr />
-      <!-- END PRODUCT -->
-    </div>
-    <div class="card-footer">
-      <div class="pull-right" style="margin: 10px;">
-        <! -- sell button -->
-        <button
-          class="mybtn btn btn-primary"
-          type="submit"
-          name="submit-button"
-          value="sell"
-        >
-          Sell
-        </button>
-        <div class="pull-right" style="margin: 5px;">
-          Total price:
-          <b>
-            {% if "selltotal" in sellDict %} {{
-            "$%.2f"|format(sellDict["selltotal"]) }} {% endif %}
-          </b>
-        </div>
-      </div>
+            <div class="row footnote">
+                <div class="col-12">
+                    <span class="text-muted small">You own {{ stock.amount }} stocks for at total worth of
+                        {{ "$%.2f"|format(stock.amount * stock.price) }} </span>
+                </div>
+            </div>
+        </a>
+        <hr style="margin: 2px;" />
+        <!-- END PRODUCT -->
+        {% endfor %}
     </div>
 
     {% endif %}
-  </form>
-</div>
-
-{% endblock %}
+    {% endblock %}

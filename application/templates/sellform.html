@@ -56,6 +56,12 @@
                     </div>
                 </div>
                 <hr />
+                <div class="row footnote">
+                    <div class="col-12">
+                        <span class="text-muted small">You own {{ stock.amount }} stocks for at total worth of
+                            {{ "$%.2f"|format(stock.amount * stock.price) }} </span>
+                    </div>
+                </div>
                 <!-- END PRODUCT -->
             </div>
             <div class="card-footer">
