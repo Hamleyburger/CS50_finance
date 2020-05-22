@@ -209,7 +209,7 @@ def sell():
         return render_template("/sell.html")
 
 
-@app.route("/hell", methods=["GET", "POST"])
+@app.route("/hell", methods=["GET"])
 @app.route("/hell/<symbol>", methods=["GET", "POST"])
 #@login_required
 def hell(symbol=None):
@@ -219,17 +219,32 @@ def hell(symbol=None):
     user = User.query.filter_by(id=session["user_id"]).first_or_404()
     session["username"] = user.username
     session["cash"] = user.cash
-    
     stocks = user.ownedStocks()
 
     if not symbol:
         # Show a list where user can click and choose symbol form its own collection
-
         return render_template("/hell.html", stocks=stocks)
 
     else:
-        # Allow user to refresh amount, sell and go back to "symbol=None".
-        return render_template("/hell.html", stocks=stocks)
+        # Check that symbol is in user's owned list
+        for stock in stocks:
+            if symbol.upper() == stock.symbol.upper():
+                # Allow user to refresh amount, sell and go back to "symbol=None".
+                setSessionStock("sellstock", symbol=symbol)
+                session["sellstock"]["selltotal"] = float(
+                session["sellstock"]["amount"]) * float(session["sellstock"]["price"])
+
+                if request.method == "GET":
+                    return render_template("/sell copy.html")
+                elif request.method == "POST":
+                    user.sell(stock.symbol, 1)
+                    return redirect(url_for("hell"))
+
+
+
+        return redirect(url_for("hell"))
+
+
 
 
 
