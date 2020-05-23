@@ -43,6 +43,7 @@ def buy():
         if action == "search":
 
             symbol = request.form.get("symbol")
+            print("User searched for {}".format(symbol))
             if lookup(symbol):
                 # Refresh stock info and reset amount if new symbol/stock search
                 setSessionStock("buystock", symbol=symbol)
@@ -52,7 +53,7 @@ def buy():
         # REFRESH
         elif action == "refresh":
             # User refreshed amount. Refresh total if amount > 0. Else
-            amount = int(request.form.get("amount"))
+            amount = int(request.form.get("shares"))
             if amount > 0:
                 setSessionStock("buystock", amount=amount)
             else:
@@ -64,6 +65,7 @@ def buy():
             if user.buy(session["buystock"]["symbol"], session["buystock"]["amount"]):
                 flash(u"Purhased {} {}".format(
                     session["buystock"]["amount"], session["buystock"]["name"]), "success")
+                print("User bought {} {}".format(session["buystock"]["amount"], session["buystock"]["name"]))
                 session["buystock"] = {}
                 session["cash"] = user.cash
             else:
@@ -182,7 +184,7 @@ def sell():
         # REFRESH
         elif action == "refresh":
             # User refreshed amount. Refresh total if amount > 0. Else
-            amount = int(request.form.get("amount"))
+            amount = int(request.form.get("shares"))
             if amount > 0:
                 setSessionStock("sellstock", amount=amount)
             else:
@@ -211,6 +213,7 @@ def sell():
 
 @app.route("/sell", methods=["GET"])
 @app.route("/sell/<symbol>", methods=["GET", "POST"])
+@login_required
 #@login_required
 def sell(symbol=None):
 
@@ -237,7 +240,7 @@ def sell(symbol=None):
                 elif request.method == "POST":
                     if request.form.get("submit-button") == "refresh":
                         # Refresh amount to sell
-                        amount = int(request.form.get("amount"))
+                        amount = int(request.form.get("shares"))
                         if amount < 1:
                             flash(u"You must input an amount higher than 0", "danger")
                         elif amount > int(stock.amount):
@@ -247,6 +250,7 @@ def sell(symbol=None):
                     else:
                         # Sell stock of given amount
                         user.sell(stock.symbol, session["sellstock"]["amount"])
+                        print("User is selling {} {}".format(stock.symbol, session["sellstock"]["amount"]))
                         setSessionStock("sellstock", amount=1)
                         return redirect(url_for("sell"))
 

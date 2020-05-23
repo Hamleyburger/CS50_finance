@@ -29,7 +29,6 @@ main .form-control {
 
 main {
   /* scroll horizontally as needed */
-  overflow-x: auto;
   /* center contents */
   text-align: center;
   /* Make the main container never be ridiculously big */
@@ -64,19 +63,21 @@ main img {
   text-decoration: inherit;
 }
 
-.product-container > a:hover {
-  color: inherit;
-  text-decoration: inherit;
-}
-
 .product-container .selectable {
   height: auto;
+  position: relative;
   -webkit-transition: background .4s ease-out;
   transition: background .4s ease-out;
   padding-left: 12px;
   padding-right: 12px;
   padding-top: 20px;
   padding-bottom: 20px;
+}
+
+@media (min-width: 768px) {
+  .product-container .selectable {
+    height: 8em;
+  }
 }
 
 .product-container .selectable .row {
@@ -89,17 +90,28 @@ main img {
   min-height: 2em !important;
 }
 
-.product-container .selectable:hover {
+.product-container .selectable .selectable-highlight {
+  position: absolute;
+  width: 100vw;
+  height: 100%;
+  left: 50%;
+  top: 50%;
+  -webkit-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);
+  z-index: -1;
+}
+
+.product-container .selectable:hover .selectable-highlight {
   background-color: rgba(133, 251, 255, 0.301);
 }
 
-.mybtn {
+.product-container .mybtn {
   color: #fff;
   background-color: #6c757d;
   border-color: #6c757d;
 }
 
-.mybtn:hover {
+.product-container .mybtn:hover {
   background-color: #84e6ff;
   border-color: #4d7a64;
 }
