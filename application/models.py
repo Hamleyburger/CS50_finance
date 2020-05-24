@@ -6,6 +6,7 @@ import decimal
 from flask import flash
 from .exceptions import userNotFoundError, invaldPasswordError
 from collections import namedtuple
+from sqlalchemy.sql import func
 
 
 class User(db.Model):
@@ -74,16 +75,20 @@ class User(db.Model):
         Gets user's owned stocks and returns list of named tuples \n
         with name, symbol, amount and current price pr. unit
         """
-        ownedStocks = db.session.query(Stock.name, Stock.symbol, Owned.amount).join(Owned).filter(Owned.user_id == self.id).all()
+        print("Owned called")
+        ownedStocks = db.session.query(Stock.name, Stock.symbol, Owned.amount, func.sum(Purchases.total_price).label("total_spent")).join(Owned).join(Purchases).filter(Owned.user_id == self.id).group_by(Purchases.stock_id).all()
+        #print("{} {} {} {} {} {}".format(q.amount, q.count, q.index, q.keys, q.name, q.symbol))
+
         stocksWithPrices = []
         # Named tuple returns a nice, readable object-like tuple for easy access
-        StockTuple = namedtuple("stockTuple", ["name", "symbol", "amount", "price"])
+        StockTuple = namedtuple("stockTuple", ["name", "symbol", "amount", "price", "total_spent"])
 
         for stock in ownedStocks:
             price = lookup(stock.symbol)["price"]
-            stockTuple = StockTuple(stock.name, stock.symbol, stock.amount, price)
+            stockTuple = StockTuple(stock.name, stock.symbol, stock.amount, price, stock.total_spent)
             stocksWithPrices.append(stockTuple)
-
+        for key in stocksWithPrices:
+            print("{}".format(key))
         return stocksWithPrices
 
     def amountOwned(self, symbol):
@@ -99,7 +104,7 @@ class User(db.Model):
             return 0
 
     def sell(self, symbol, amount):
-        """Returns true if success. """
+        """ Returns true if success. """
         # Check that amount >0
         if int(amount) > 0:
             # Check that user owns this stock and enough
@@ -113,6 +118,9 @@ class User(db.Model):
                 # Make the transaction: withdraw money, remove amount of owned stocks
                 self.cash += pricetotal
                 Owned.remove(self, symbol, amount)
+                sale = Sales(stock_id=Stock.get(symbol).id, amount=amount, unit_price=decimal.Decimal(stockDict["price"]), total_price=pricetotal)
+                self.sales.append(sale)
+                db.session.commit()
                 flash(u"Sold {} items of {}".format(
                     amount, stockDict["name"]), "success")
                 return True
@@ -201,7 +209,8 @@ class Owned(db.Model):
     amount = db.Column(db.Integer, nullable=False)
 
     @classmethod
-    def add(cls, user, stock, amount):
+    def add(cls, user, stock, amount, commit=False):
+        """ adds stock to user's index. Don't forget to commit or set commit to True! """
         amount = int(amount)
         owned = cls.query.filter_by(
             user_id=user.id, stock_id=stock.id).first()
@@ -212,10 +221,12 @@ class Owned(db.Model):
             print("User bought this for the first time.")
             owned = cls(user_id=user.id, stock_id=stock.id, amount=amount)
             db.session.add(owned)
-        db.session.commit()
+        if commit:
+            db.session.commit()
 
     @classmethod
-    def remove(cls, user, symbol, amount):
+    def remove(cls, user, symbol, amount, commit=False):
+        """ Removes stock from user's owned list. Either commit afterwards or set commit to True """
         symbol = symbol.upper()
         stock = Stock.get(symbol)
         owned = cls.query.filter_by(user_id=user.id, stock_id=stock.id).first()
@@ -229,7 +240,8 @@ class Owned(db.Model):
                 db.session.delete(owned)
         else:
             print("User does not own this.")
-        db.session.commit()
+        if commit:
+            db.session.commit()
 
 
 class Sales(db.Model):
@@ -243,7 +255,7 @@ class Sales(db.Model):
     unit_price = db.Column(db.Numeric, nullable=False)
     total_price = db.Column(db.Numeric, nullable=False)
     time = db.Column(db.DateTime, nullable=False,
-                     default=datetime.datetime.utcnow().isoformat())
+                     default=datetime.datetime.utcnow())
 
 
 class Purchases(db.Model):
