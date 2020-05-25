@@ -24,7 +24,7 @@ def after_request(response):
 @login_required
 def index():
     """Show portfolio of stocks"""
-    return apology("TODO")
+    return redirect(url_for("sell"))
 
 
 @app.route("/buy", methods=["GET", "POST"])
@@ -223,7 +223,12 @@ def sell(symbol=None):
 
     if not symbol:
         # Show a list where user can click and choose symbol form its own collection
-        return render_template("/sell.html", stocks=stocks)
+        grand_total = 0.0
+        for stock in stocks:
+            grand_total += float(stock.price * stock.amount)
+        grand_total += float(user.cash)
+
+        return render_template("/sell.html", stocks=stocks, grand_total=grand_total)
 
     else:
         # Check that symbol is in user's owned list
@@ -252,6 +257,7 @@ def sell(symbol=None):
                         user.sell(stock.symbol, session["sellstock"]["amount"])
                         print("User is selling {} {}".format(stock.symbol, session["sellstock"]["amount"]))
                         setSessionStock("sellstock", amount=1)
+                        session["cash"] = user.cash
                         return redirect(url_for("sell"))
 
                     return redirect(request.url)

@@ -1,51 +1,55 @@
 {% extends "layout.html" %} {% block title %} Sell {% endblock %} {% block main
 %}
 
-<! -- product containter, only shows if there's a valid stock in flask session -->
-    {% if (stocks == []) %}
-    <!-- User still hasn't posted anything. -->
-    <p>You don't own any stocks</p>
-    {% else %}
-    <!-- User has searched for a valid stock. -->
-    <!-- sellDict is the dictionary with stock information. -->
-    <div class="container-fluid product-container">
-        {% for stock in stocks %}
-        <!-- PRODUCT -->
-        <a class="selectable" href="{{ url_for('sell', symbol=stock.symbol) }}" style="display: block;">
-            <div class="selectable-highlight"></div>
-            <!-- since this div is an anchor tag it needs to be set to display: block to work as a div -->
-            <div class="row pb-4 pb-md-1">
+<!-- product containter, only shows if there's a valid stock in flask session -->
+{% if (stocks == []) %}
+<!-- User still hasn't posted anything. -->
+<p>You don't own any stocks</p>
+{% else %}
 
-                <div class="col-12 col-sm-7">
-                    <h4 class="product-name">
-                        <strong>{{ stock.name }}</strong>
-                    </h4>
-                </div>
-
-                <div class="col-12 col-sm-2">
-                    <h4>
-                        <small>{{ stock.symbol }}</small>
-                    </h4>
-                </div>
-
-                <div class="col-12 col-sm-3 text-right">
-                    <strong size="2">
-                        ${{ stock.price }}
-                    </strong>
-                </div>
-
-            </div>
-            <div class="row footnote">
-                <div class="col-12">
-                    <span class="text-muted small">You own {{ stock.amount }} stocks for at total worth of
-                        {{ "$%.2f"|format(stock.amount * stock.price) }} </span>
-                </div>
-            </div>
-        </a>
-        <hr style="margin: 2px;" />
-        <!-- END PRODUCT -->
-        {% endfor %}
+<!-- User has searched for a valid stock. -->
+<!-- sellDict is the dictionary with stock information. -->
+<div class="container-fluid product-container">
+    <div class="row" style="margin: 0; padding: 12px; justify-content: flex-end; font-size: 130%;">Total holdings:
+        <strong>{{ grand_total }}</strong>
     </div>
+    {% for stock in stocks %}
+    <!-- PRODUCT -->
+    <a class="selectable" href="{{ url_for('sell', symbol=stock.symbol) }}" style="display: block;">
+        <div class="selectable-highlight"></div>
+        <!-- since this div is an anchor tag it needs to be set to display: block to work as a div -->
+        <div class="row pb-4 pb-md-1">
 
-    {% endif %}
-    {% endblock %}
+            <div class="col-12 col-sm-7">
+                <h4 class="product-name">
+                    <strong>{{ stock.name }}</strong>
+                </h4>
+            </div>
+
+            <div class="col-12 col-sm-2">
+                <h4>
+                    <small>{{ stock.symbol }}</small>
+                </h4>
+            </div>
+
+            <div class="col-12 col-sm-3 text-right">
+                <strong size="2">
+                    ${{ stock.price }}
+                </strong>
+            </div>
+
+        </div>
+        <div class="row footnote">
+            <div class="col-12">
+                <span class="text-muted small">You own {{ stock.amount }} stocks for at total worth of
+                    {{ "$%.2f"|format(stock.amount * stock.price) }} </span>
+            </div>
+        </div>
+    </a>
+    <hr style="margin: 2px;" />
+    <!-- END PRODUCT -->
+    {% endfor %}
+</div>
+
+{% endif %}
+{% endblock %}
