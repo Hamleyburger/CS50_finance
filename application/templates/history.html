@@ -1,0 +1,66 @@
+{% extends "layout.html" %}
+
+{% block title %}
+History
+{% endblock %}
+
+{% block main %}
+<div class="container mb-3 mt-3" style="text-align: left !important;">
+
+    <table id="historytable" class="table table-striped table-bordered" style="width:100%;">
+        <thead>
+            <tr>
+                <th>Symbol</th>
+                <th>Price</th>
+                <th>Amount</th>
+                <th>Total</th>
+                <th>Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>SFsdf</td>
+                <td>9000</td>
+                <td>6</td>
+                <td>27000</td>
+                <td>9 oclock</td>
+            </tr>
+            <tr>
+                <td>kgsff</td>
+                <td>8000</td>
+                <td>11</td>
+                <td>2866</td>
+                <td>5 oclock</td>
+            </tr>
+            <tr>
+                <td>Alma</td>
+                <td>4</td>
+                <td>9999</td>
+                <td>222</td>
+                <td>22 oclock</td>
+            </tr>
+        </tbody>
+        <tfoot>
+            <tr>
+                <th>Symbol</th>
+                <th>Price</th>
+                <th>Amount</th>
+                <th>Total</th>
+                <th>Time</th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.21/js/dataTables.bootstrap4.min.js"></script>
+<script src="https://cdn.datatables.net/fixedheader/3.1.7/js/dataTables.fixedHeader.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#historytable').DataTable({
+            "order": [[4, "desc"]]
+        });
+    });
+</script>
+{% endblock %}

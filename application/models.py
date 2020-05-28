@@ -77,7 +77,6 @@ class User(db.Model):
         """
         print("Owned called")
         ownedStocks = db.session.query(Stock.name, Stock.symbol, Owned.amount, func.sum(Purchases.total_price).label("total_spent")).join(Owned).join(Purchases).filter(Owned.user_id == self.id).group_by(Purchases.stock_id).all()
-        #print("{} {} {} {} {} {}".format(q.amount, q.count, q.index, q.keys, q.name, q.symbol))
 
         stocksWithPrices = []
         # Named tuple returns a nice, readable object-like tuple for easy access
@@ -87,8 +86,7 @@ class User(db.Model):
             price = lookup(stock.symbol)["price"]
             stockTuple = StockTuple(stock.name, stock.symbol, stock.amount, price, stock.total_spent)
             stocksWithPrices.append(stockTuple)
-        for key in stocksWithPrices:
-            print("{}".format(key))
+
         return stocksWithPrices
 
     def amountOwned(self, symbol):
@@ -163,6 +161,15 @@ class User(db.Model):
             print("Attempted to buy stock of invalid symbol")
             return False
 
+    def transactions(self):
+        q = db.session.query
+        q1 = q(Purchases, Stock.symbol).filter(Purchases.user_id == self.id).join(Stock)
+        q2 = q(Sales, Stock.symbol).filter(Sales.user_id == self.id).join(Stock)
+
+        q3 = q1.union(q2)
+
+        for row in q3:
+            print(f"{row.symbol} {row.Purchases.amount} {row.Purchases.total_price} {row.Purchases.time.isoformat()}")
 
 class Stock(db.Model):
     __tablename__ = "stocks"
@@ -235,8 +242,6 @@ class Owned(db.Model):
             print("{} now owns {} {}".format(
                 user.username, owned.amount, stock.name))
             if owned.amount == 0:
-                print("attempting to remove owned")
-                print(owned)
                 db.session.delete(owned)
         else:
             print("User does not own this.")

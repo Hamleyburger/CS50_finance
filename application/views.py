@@ -24,6 +24,7 @@ def after_request(response):
 @login_required
 def index():
     """Show portfolio of stocks"""
+    user = User.query.filter_by(id=session["user_id"]).first_or_404()
     return redirect(url_for("sell"))
 
 
@@ -34,6 +35,7 @@ def buy():
     if request.method == "POST":
 
         user = User.query.filter_by(id=session["user_id"]).first_or_404()
+
         # action can be search, refresh (amount) or buy
         action = request.form.get("submit-button")
         # setSessionStock initiates or refreshes session stock info
@@ -87,7 +89,7 @@ def buy():
 @login_required
 def history():
     """Show history of transactions"""
-    return apology("TODO")
+    return render_template("history.html")
 
 
 @app.route("/logout")
