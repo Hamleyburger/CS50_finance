@@ -24,7 +24,6 @@ def after_request(response):
 @login_required
 def index():
     """Show portfolio of stocks"""
-    user = User.query.filter_by(id=session["user_id"]).first_or_404()
     return redirect(url_for("sell"))
 
 
@@ -89,6 +88,9 @@ def buy():
 @login_required
 def history():
     """Show history of transactions"""
+    user = User.query.filter_by(id=session["user_id"]).first_or_404()
+
+    print(user.transactions())
     return render_template("history.html")
 
 

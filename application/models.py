@@ -162,14 +162,31 @@ class User(db.Model):
             return False
 
     def transactions(self):
+        """ Return a list of all transactions sorted by time\n
+        name, symbol, amount, total_price, type (sale or purchase) """
+
+        transactionHistory = []
         q = db.session.query
-        q1 = q(Purchases, Stock.symbol).filter(Purchases.user_id == self.id).join(Stock)
-        q2 = q(Sales, Stock.symbol).filter(Sales.user_id == self.id).join(Stock)
 
-        q3 = q1.union(q2)
+        # Convert queries to dicts, add type and format time and price. Add to list.
+        purchaseQuery = q(Purchases.amount, Purchases.total_price, Purchases.time, Stock.symbol, Stock.name).filter(Purchases.user_id == self.id).join(Stock)
+        for row in purchaseQuery:
+            tempDict = row._asdict()
+            tempDict["time"] = tempDict["time"].isoformat()
+            tempDict["type"] = "purchase"
+            tempDict["total_price"] = "-{:.2f}".format(tempDict["total_price"])
+            transactionHistory.append(tempDict)
 
-        for row in q3:
-            print(f"{row.symbol} {row.Purchases.amount} {row.Purchases.total_price} {row.Purchases.time.isoformat()}")
+        saleQuery = q(Purchases.amount, Purchases.total_price, Purchases.time, Stock.symbol, Stock.name).filter(Sales.user_id == self.id).join(Stock)
+        for row in saleQuery:
+            tempDict = row._asdict()
+            tempDict["time"] = tempDict["time"].isoformat()
+            tempDict["type"] = "sale"
+            tempDict["total_price"] = "{:+.2f}".format(tempDict["total_price"])
+            transactionHistory.append(tempDict)
+
+        # Sort the list by time descending and return it
+        return sorted(transactionHistory, key=lambda i: i['time'], reverse=True)
 
 class Stock(db.Model):
     __tablename__ = "stocks"
