@@ -90,8 +90,8 @@ def history():
     """Show history of transactions"""
     user = User.query.filter_by(id=session["user_id"]).first_or_404()
 
-    print(user.transactions())
-    return render_template("history.html")
+    transactions = user.transactions()
+    return render_template("history.html", tran=transactions)
 
 
 @app.route("/logout")

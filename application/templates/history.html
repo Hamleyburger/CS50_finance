@@ -11,39 +11,30 @@ History
         <thead>
             <tr>
                 <th>Symbol</th>
-                <th>Price</th>
+
                 <th>Amount</th>
                 <th>Total</th>
                 <th>Time</th>
             </tr>
         </thead>
         <tbody>
+            {% for row in tran %}
+
             <tr>
-                <td>SFsdf</td>
-                <td>9000</td>
-                <td>6</td>
-                <td>27000</td>
-                <td>9 oclock</td>
+                <td>{{ row["symbol"] }}</td>
+
+                <td>{{ row["amount"] }}</td>
+                <td>{{ row["total_price"] }}</td>
+                <td>{{ row["time"] }}</td>
             </tr>
-            <tr>
-                <td>kgsff</td>
-                <td>8000</td>
-                <td>11</td>
-                <td>2866</td>
-                <td>5 oclock</td>
-            </tr>
-            <tr>
-                <td>Alma</td>
-                <td>4</td>
-                <td>9999</td>
-                <td>222</td>
-                <td>22 oclock</td>
-            </tr>
+
+            {% endfor %}
+
         </tbody>
         <tfoot>
             <tr>
                 <th>Symbol</th>
-                <th>Price</th>
+
                 <th>Amount</th>
                 <th>Total</th>
                 <th>Time</th>
@@ -59,7 +50,7 @@ History
 <script>
     $(document).ready(function () {
         $('#historytable').DataTable({
-            "order": [[4, "desc"]]
+            "order": [[3, "desc"]]
         });
     });
 </script>
