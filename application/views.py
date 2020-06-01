@@ -43,6 +43,7 @@ def buy():
         if action == "search":
 
             symbol = request.form.get("symbol")
+            print("*********User searched for {}".format(symbol))
             if lookup(symbol):
                 # Refresh stock info and reset amount if new symbol/stock search
                 setSessionStock("buystock", symbol=symbol)
@@ -64,6 +65,7 @@ def buy():
             if user.buy(session["buystock"]["symbol"], session["buystock"]["amount"]):
                 flash(u"Purhased {} {}".format(
                     session["buystock"]["amount"], session["buystock"]["name"]), "success")
+                print("*********User bought {} {}".format(session["buystock"]["amount"], session["buystock"]["name"]))
                 session["buystock"] = {}
                 session["cash"] = user.cash
             else:
@@ -192,6 +194,7 @@ def sell():
         else:
             # User decided to sell a stock. Sell and reset "sellstock" in session
             if user.sell(session["sellstock"]["symbol"], session["sellstock"]["amount"]):
+
                 session["sellstock"] = {}
                 session["cash"] = user.cash
             else:
@@ -247,6 +250,7 @@ def sell(symbol=None):
                     else:
                         # Sell stock of given amount
                         user.sell(stock.symbol, session["sellstock"]["amount"])
+                        print("*********User is selling {} {}".format(stock.symbol, session["sellstock"]["amount"]))
                         setSessionStock("sellstock", amount=1)
                         return redirect(url_for("sell"))
 
