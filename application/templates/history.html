@@ -11,7 +11,6 @@ History
         <thead>
             <tr>
                 <th>Symbol</th>
-
                 <th>Amount</th>
                 <th>Total</th>
                 <th>Time</th>
@@ -21,12 +20,18 @@ History
             {% for row in tran %}
 
             <tr>
-                <td>{{ row["symbol"] }}</td>
-
+                <td>{{row["name"]}} ({{ row["symbol"] }})</td>
                 <td>{{ row["amount"] }}</td>
-                <td>{{ row["total_price"] }}</td>
-                <td>{{ row["time"] }}</td>
+                <td style='{{"color: green;" if row["type"] == "sale" else "color: red;"}}'>{{ row["total_price"] }}
+                </td>
+                <td id="time{{loop.index}}">{{ row["time"] }}</td>
             </tr>
+            <script>
+                // moment library needs to be imported (in base template):
+                // "https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"
+                var currentTime = moment.parseZone('{{ row["time"]|safe }}').local().format("ddd DD/MM/YYYY");
+                document.getElementById("time{{loop.index}}").innerHTML = currentTime;
+            </script>
 
             {% endfor %}
 
@@ -34,7 +39,6 @@ History
         <tfoot>
             <tr>
                 <th>Symbol</th>
-
                 <th>Amount</th>
                 <th>Total</th>
                 <th>Time</th>
@@ -43,12 +47,11 @@ History
     </table>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
-<script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.10.21/js/dataTables.bootstrap4.min.js"></script>
-<script src="https://cdn.datatables.net/fixedheader/3.1.7/js/dataTables.fixedHeader.min.js"></script>
 <script>
+    // Necessary imports: jquery, DataTables, Moment.js, DataTables plugin:
+    // "Ultimate Date / Time Sorting" with moment.js - see Layout.hmtl
     $(document).ready(function () {
+        $.fn.dataTable.moment("ddd DD/MM/YYYY")
         $('#historytable').DataTable({
             "order": [[3, "desc"]]
         });
