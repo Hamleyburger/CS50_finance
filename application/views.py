@@ -24,7 +24,7 @@ def after_request(response):
 @login_required
 def index():
     """Show portfolio of stocks"""
-    return apology("TODO")
+    return redirect(url_for("sell"))
 
 
 @app.route("/buy", methods=["GET", "POST"])
@@ -34,6 +34,7 @@ def buy():
     if request.method == "POST":
 
         user = User.query.filter_by(id=session["user_id"]).first_or_404()
+
         # action can be search, refresh (amount) or buy
         action = request.form.get("submit-button")
         # setSessionStock initiates or refreshes session stock info
@@ -43,7 +44,9 @@ def buy():
         if action == "search":
 
             symbol = request.form.get("symbol")
+
             print("*********User searched for {}".format(symbol))
+
             if lookup(symbol):
                 # Refresh stock info and reset amount if new symbol/stock search
                 setSessionStock("buystock", symbol=symbol)
@@ -53,7 +56,7 @@ def buy():
         # REFRESH
         elif action == "refresh":
             # User refreshed amount. Refresh total if amount > 0. Else
-            amount = int(request.form.get("amount"))
+            amount = int(request.form.get("shares"))
             if amount > 0:
                 setSessionStock("buystock", amount=amount)
             else:
@@ -65,7 +68,9 @@ def buy():
             if user.buy(session["buystock"]["symbol"], session["buystock"]["amount"]):
                 flash(u"Purhased {} {}".format(
                     session["buystock"]["amount"], session["buystock"]["name"]), "success")
+
                 print("*********User bought {} {}".format(session["buystock"]["amount"], session["buystock"]["name"]))
+
                 session["buystock"] = {}
                 session["cash"] = user.cash
             else:
@@ -87,7 +92,15 @@ def buy():
 @login_required
 def history():
     """Show history of transactions"""
-    return apology("TODO")
+
+    user = User.query.filter_by(id=session["user_id"]).first_or_404()
+    transactions = user.transactions()
+
+    for i, row in enumerate(transactions):
+        if i < 20:
+            print(row)
+
+    return render_template("history.html", tran=transactions)
 
 
 @app.route("/logout")
@@ -184,7 +197,7 @@ def sell():
         # REFRESH
         elif action == "refresh":
             # User refreshed amount. Refresh total if amount > 0. Else
-            amount = int(request.form.get("amount"))
+            amount = int(request.form.get("shares"))
             if amount > 0:
                 setSessionStock("sellstock", amount=amount)
             else:
@@ -214,6 +227,7 @@ def sell():
 
 @app.route("/sell", methods=["GET"])
 @app.route("/sell/<symbol>", methods=["GET", "POST"])
+@login_required
 #@login_required
 def sell(symbol=None):
 
@@ -223,7 +237,12 @@ def sell(symbol=None):
 
     if not symbol:
         # Show a list where user can click and choose symbol form its own collection
-        return render_template("/sell.html", stocks=stocks)
+        grand_total = 0.0
+        for stock in stocks:
+            grand_total += float(stock.price * stock.amount)
+        grand_total += float(user.cash)
+
+        return render_template("/sell.html", stocks=stocks, grand_total=grand_total)
 
     else:
         # Check that symbol is in user's owned list
@@ -240,7 +259,7 @@ def sell(symbol=None):
                 elif request.method == "POST":
                     if request.form.get("submit-button") == "refresh":
                         # Refresh amount to sell
-                        amount = int(request.form.get("amount"))
+                        amount = int(request.form.get("shares"))
                         if amount < 1:
                             flash(u"You must input an amount higher than 0", "danger")
                         elif amount > int(stock.amount):
@@ -250,8 +269,11 @@ def sell(symbol=None):
                     else:
                         # Sell stock of given amount
                         user.sell(stock.symbol, session["sellstock"]["amount"])
+
                         print("*********User is selling {} {}".format(stock.symbol, session["sellstock"]["amount"]))
+
                         setSessionStock("sellstock", amount=1)
+                        session["cash"] = user.cash
                         return redirect(url_for("sell"))
 
                     return redirect(request.url)

@@ -27,7 +27,7 @@ main .form-control {
 
 main {
   /* scroll horizontally as needed */
-  overflow-x: auto;
+  //overflow-x: auto;
   /* center contents */
   text-align: center;
   /* Make the main container never be ridiculously big */
@@ -54,19 +54,23 @@ main img {
   & > a {
       color: inherit;
       text-decoration: inherit;
-      &:hover {
-          color: inherit;
-          text-decoration: inherit;
-      }
   }
     .selectable {
         height: auto;
+        // He added:
+        position: relative;
+
+        @media (min-width: 768px) {  
+            height: 8em;
+        }
         transition: background .4s ease-out;
         padding-left: 12px;
         padding-right: 12px;
         padding-top: 20px;
         padding-bottom: 20px;
         
+
+
         .row {
             // height must be set for centering to work. Now I'm using padding instead though.
             //min-height: 4em;
@@ -75,21 +79,30 @@ main img {
         .footnote {
             min-height: 2em !important;
         }
+
+        // He added everything in selectable-highlight
+        .selectable-highlight {
+            position: absolute;
+            width: 100vw;
+            height: 100%;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            z-index: -1;
+        }
     }
-    .selectable:hover {
-        background-color: rgba(133, 251, 255, 0.301);
+
+    .selectable:hover .selectable-highlight {
+    background-color: rgba(133, 251, 255, 0.301);
     }
 
-
-
-}
-
-.mybtn {
-  color: #fff;
-  background-color: #6c757d;
-  border-color: #6c757d;
-  &:hover {
-    background-color: #84e6ff;
-    border-color: #4d7a64;
-  }
+    .mybtn {
+    color: #fff;
+    background-color: #6c757d;
+    border-color: #6c757d;
+        &:hover {
+            background-color: #84e6ff;
+            border-color: #4d7a64;
+        }
+    }
 }

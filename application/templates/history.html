@@ -1,0 +1,60 @@
+{% extends "layout.html" %}
+
+{% block title %}
+History
+{% endblock %}
+
+{% block main %}
+<div class="container mb-3 mt-3" style="text-align: left !important;">
+
+    <table id="historytable" class="table table-striped table-bordered" style="width:100%;">
+        <thead>
+            <tr>
+                <th>Symbol</th>
+                <th>Amount</th>
+                <th>Total</th>
+                <th>Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in tran %}
+
+            <tr>
+                <td>{{row["name"]}} ({{ row["symbol"] }})</td>
+                <td>{{ row["amount"] }}</td>
+                <td style='{{"color: green;" if row["type"] == "sale" else "color: red;"}}'>{{ row["total_price"] }}
+                </td>
+                <td id="time{{loop.index}}">{{ row["time"] }}</td>
+            </tr>
+            <script>
+                // moment library needs to be imported (in base template):
+                // "https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"
+                var currentTime = moment.parseZone('{{ row["time"]|safe }}').local().format("ddd DD/MM/YYYY");
+                document.getElementById("time{{loop.index}}").innerHTML = currentTime;
+            </script>
+
+            {% endfor %}
+
+        </tbody>
+        <tfoot>
+            <tr>
+                <th>Symbol</th>
+                <th>Amount</th>
+                <th>Total</th>
+                <th>Time</th>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+<script>
+    // Necessary imports: jquery, DataTables, Moment.js, DataTables plugin:
+    // "Ultimate Date / Time Sorting" with moment.js - see Layout.hmtl
+    $(document).ready(function () {
+        $.fn.dataTable.moment("ddd DD/MM/YYYY")
+        $('#historytable').DataTable({
+            "order": [[3, "desc"]]
+        });
+    });
+</script>
+{% endblock %}
