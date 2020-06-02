@@ -92,16 +92,14 @@ def setSessionStock(keyString, symbol=None, amount=None):
         session[keyString] = {}
         session[keyString]["amount"] = 1
     if symbol:
-        if lookup(symbol):
-            if "symbol" in session[keyString]:
-                if session[keyString]["symbol"].lower() != symbol.lower():
-                    # if it's a different symbol from before, amount is 1
-                    amount = 1
-            else:
+        oldsymbol = ""
+        if "symbol" in session[keyString]:
+            oldsymbol = session[keyString]["symbol"]
+        if lookupRepopulate(session[keyString], symbol):
+            if oldsymbol.lower() != symbol.lower():
+                # if it's a different symbol from before, amount is 1
                 amount = 1
 
-        # try to refresh session with new data from lookup
-        lookupRepopulate(session[keyString], symbol)
     # No symbol was passed in. Refresh currect info if exists
     elif "symbol" in session[keyString]:
         symbol = session[keyString]["symbol"]
@@ -116,5 +114,7 @@ def lookupRepopulate(receivingDict, symbol):
     if lookup(symbol):
         for newKey, newValue in lookup(symbol).items():
             receivingDict[newKey] = newValue
+        return True
     else:
         flash(u"Could not find stock symbol in database", "danger")
+        return False

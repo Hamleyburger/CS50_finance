@@ -91,10 +91,6 @@ def history():
     
     user = User.query.filter_by(id=session["user_id"]).first_or_404()
     transactions = user.transactions()
-    
-    for i, row in enumerate(transactions):
-        if i < 20:
-            print(row)
 
     return render_template("history.html", tran=transactions)
 
@@ -229,6 +225,9 @@ def sell(symbol=None):
     """Sell shares of stock"""
     user = User.query.filter_by(id=session["user_id"]).first_or_404()
     stocks = user.ownedStocks()
+
+    print(session)
+    print(stocks[0])
 
     if not symbol:
         # Show a list where user can click and choose symbol form its own collection
