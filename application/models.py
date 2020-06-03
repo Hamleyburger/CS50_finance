@@ -109,18 +109,17 @@ class User(db.Model):
             amountOwned = self.amountOwned(symbol)
             if amountOwned >= amount:
                 # User owns enouh of this stock. Calculate value
-                stockDict = lookup(symbol)
-                pricetotal = decimal.Decimal(
-                    stockDict["price"]) * decimal.Decimal(amount)
+                stock = Stock.get(symbol, amount)
+                pricetotal = stock.total
 
                 # Make the transaction: withdraw money, remove amount of owned stocks
                 self.cash += pricetotal
                 Owned.remove(self, symbol, amount)
-                sale = Sales(stock_id=Stock.get(symbol).id, amount=amount, unit_price=decimal.Decimal(stockDict["price"]), total_price=pricetotal)
+                sale = Sales(stock_id=stock.id, amount=amount, unit_price=stock.price, total_price=stock.total)
                 self.sales.append(sale)
                 db.session.commit()
                 flash(u"Sold {} items of {}".format(
-                    amount, stockDict["name"]), "success")
+                    amount, stock.name), "success")
                 return True
             elif amountOwned == 0:
                 flash(u"You don't have any of this stock", "danger")
@@ -136,30 +135,29 @@ class User(db.Model):
         if int(amount) < 1:
             # User tried to buy less than one
             return False
-        elif lookup(symbol):
-            stockDict = lookup(symbol)
-            pricetotal = decimal.Decimal(
-                stockDict["price"]) * decimal.Decimal(amount)
-            if self.cash < pricetotal:
-                # User can't afford
-                return False
-            else:
-                # Purchase goes through. Withdraw money, add stock to database,
-                # add stock+amount to user's "Owned", add purchase to user's purchases
-                self.cash -= pricetotal
-                stock = Stock.get(symbol)
-                Owned.add(self, stock, amount)
-                purchase = Purchases(stock_id=stock.id, amount=amount, unit_price=decimal.Decimal(
-                    stockDict["price"]), total_price=pricetotal)
-                self.purchases.append(purchase)
-                db.session.commit()
-                # Make a methid in Owned (instantiated?) that adds amount owned if not exists.
-                # If it exists alter amount.
-                # Also a method for subtracting if exists will be needed.
-                return True
         else:
-            print("Attempted to buy stock of invalid symbol")
-            return False
+            stock = Stock.get(symbol, amount)
+            if stock:
+                pricetotal = stock.total
+                if self.cash < pricetotal:
+                    # User can't afford
+                    flash(f"u broke", "info")
+                    return False
+                else:
+                    # Purchase goes through. Withdraw money, add stock to database,
+                    # add stock+amount to user's "Owned", add purchase to user's purchases
+                    self.cash -= pricetotal
+                    Owned.add(self, stock, amount)
+                    purchase = Purchases(stock_id=stock.id, amount=amount, unit_price=stock.price, total_price=pricetotal)
+                    self.purchases.append(purchase)
+                    db.session.commit()
+                    # Make a methid in Owned (instantiated?) that adds amount owned if not exists.
+                    # If it exists alter amount.
+                    # Also a method for subtracting if exists will be needed.
+                    return True
+            else:
+                print("Attempted to buy stock of invalid symbol")
+                return False
 
     def transactions(self):
         """ Return a list of all transactions sorted by time\n
@@ -195,19 +193,23 @@ class Stock(db.Model):
     symbol = db.Column(db.String(), nullable=False, unique=True)
     name = db.Column(db.String, nullable=False)
 
-    # Checks with a stock symbol if the stock exists
-    # If it exists in API return it, else return None
-    # If it did not exist in database Stocks table, add it.
+    # ORM specific variables
+    amount = 0
+    price = 0
+    total = 0
+
     @classmethod
-    def get(cls, symbol):
-        stockDict = {}
-        if lookup(symbol):
-            stockDict = lookup(symbol)
-        else:
+    def get(cls, symbol, amount=1):
+        """ Returns a stock with fresh info and adds it to database if new. Returns none if invalid symbol """
+
+        stockDict = lookup(symbol)
+        if not stockDict:
             return None
-        # If we've reached here stockDict has content
+        print("stockdict not none: {}".format(stockDict))
+        # If we've reached here symbol was valid
         stockSymbol = stockDict["symbol"]
         stockName = stockDict["name"]
+        stockPrice = stockDict["price"]
 
         # If this stock is already in database - use it!
         stock = cls.query.filter_by(symbol=stockSymbol).first()
@@ -218,8 +220,12 @@ class Stock(db.Model):
             db.session.add(stock)
             db.session.commit()
 
+        stock.price = decimal.Decimal(stockPrice)
+        stock.amount = amount if amount >= 1 else 1
+        stock.total = stock.amount * stock.price
         # Return whatever stock ended up being set to
         return stock
+
 
 
 # Associational table between User and Stock
