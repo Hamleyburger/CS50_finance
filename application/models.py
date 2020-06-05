@@ -68,24 +68,22 @@ class User(db.Model):
                 raise invaldPasswordError("Incorrect password")
         else:
             raise userNotFoundError(f'User "{username}" not found')
-
+#---------------------
     # Methods for instantiated objects
     def ownedStocks(self):
         """
         Gets user's owned stocks and returns list of named tuples \n
         with name, symbol, amount and current price pr. unit
         """
-        print("Owned called")
-        ownedStocks = db.session.query(Stock.name, Stock.symbol, Owned.amount, func.sum(Purchases.total_price).label("total_spent")).join(Owned).join(Purchases).filter(Owned.user_id == self.id).group_by(Purchases.stock_id).all()
+        ownedStocks = db.session.query(Stock, Owned.amount).join(Owned).filter(Owned.user_id == self.id).all()
 
         stocksWithPrices = []
-        # Named tuple returns a nice, readable object-like tuple for easy access
-        StockTuple = namedtuple("stockTuple", ["name", "symbol", "amount", "price", "total_spent"])
 
         for stock in ownedStocks:
-            price = lookup(stock.symbol)["price"]
-            stockTuple = StockTuple(stock.name, stock.symbol, stock.amount, price, stock.total_spent)
-            stocksWithPrices.append(stockTuple)
+            stock.Stock.amount = stock.amount
+            stock.Stock.price = lookup(stock.Stock.symbol)["price"]
+            stock = stock.Stock
+            stocksWithPrices.append(stock)
 
         return stocksWithPrices
 
@@ -118,15 +116,13 @@ class User(db.Model):
                 sale = Sales(stock_id=stock.id, amount=amount, unit_price=stock.price, total_price=stock.total)
                 self.sales.append(sale)
                 db.session.commit()
-                flash(u"Sold {} items of {}".format(
-                    amount, stock.name), "success")
                 return True
             elif amountOwned == 0:
-                flash(u"You don't have any of this stock", "danger")
+                raise Exception("You don't have any of this stock")
             else:
-                flash(u"You don't own enough of this stock", "danger")
+                raise Exception("You don't own enough of this stock")
         else:
-            flash(u"You can't sell 0 stocks", "danger")
+            raise Exception("You can't sell 0 stocks")
         return False
 
     def buy(self, symbol, amount):
@@ -134,34 +130,29 @@ class User(db.Model):
         # if user doesn't have enough money
         if int(amount) < 1:
             # User tried to buy less than one
-            return False
+            raise Exception("You can't trade less than one")
         else:
             stock = Stock.get(symbol, amount)
             if stock:
                 pricetotal = stock.total
                 if self.cash < pricetotal:
                     # User can't afford
-                    flash(f"u broke", "info")
-                    return False
+                    raise Exception("Insufficient funds")
                 else:
-                    # Purchase goes through. Withdraw money, add stock to database,
-                    # add stock+amount to user's "Owned", add purchase to user's purchases
+                    # Purchase goes through. Withdraw money, add to Owned and Purchases tables
                     self.cash -= pricetotal
                     Owned.add(self, stock, amount)
                     purchase = Purchases(stock_id=stock.id, amount=amount, unit_price=stock.price, total_price=pricetotal)
                     self.purchases.append(purchase)
                     db.session.commit()
-                    # Make a methid in Owned (instantiated?) that adds amount owned if not exists.
-                    # If it exists alter amount.
-                    # Also a method for subtracting if exists will be needed.
+
                     return True
             else:
-                print("Attempted to buy stock of invalid symbol")
-                return False
+                raise Exception("Invalid stock symbol")
 
     def transactions(self):
         """ Return a list of all transactions sorted by time\n
-        name, symbol, amount, total_price, type (sale or purchase) """
+        name, symbol, amount, total_price, type (sale or purchase). """
 
         transactionHistory = []
         q = db.session.query
@@ -205,7 +196,6 @@ class Stock(db.Model):
         stockDict = lookup(symbol)
         if not stockDict:
             return None
-        print("stockdict not none: {}".format(stockDict))
         # If we've reached here symbol was valid
         stockSymbol = stockDict["symbol"]
         stockName = stockDict["name"]
@@ -218,7 +208,7 @@ class Stock(db.Model):
         if not stock:
             stock = cls(symbol=stockSymbol, name=stockName)
             db.session.add(stock)
-            db.session.commit()
+            #db.session.commit()
 
         stock.price = decimal.Decimal(stockPrice)
         stock.amount = amount if amount >= 1 else 1
@@ -240,7 +230,8 @@ class Owned(db.Model):
 
     @classmethod
     def add(cls, user, stock, amount, commit=False):
-        """ adds stock to user's index. Don't forget to commit or set commit to True! """
+        """ adds stock to user's index. Don't forget to commit after calling\n
+        or set commit to True. """
         amount = int(amount)
         owned = cls.query.filter_by(
             user_id=user.id, stock_id=stock.id).first()

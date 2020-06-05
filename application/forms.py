@@ -42,24 +42,8 @@ class LoginForm(FlaskForm):
                            DataRequired(), Length(min=4, max=30), existingUser])
     password = PasswordField("Password", validators=[
                              DataRequired(), Length(min=8, max=30), validPassword])
+    # 'remember me' is currently not being put tu use
     remember = BooleanField("Remember me")
     submit = SubmitField("Login")
 
-    """
-    title:
-    Register
 
-form action="/register
-        <div class="form-group">
-            <input autocomplete="off" autofocus class="form-control" name="username" placeholder="Username" type="text">
-        </div>
-        <div class="form-group">
-            <input class="form-control" name="password" placeholder="Password" type="password">
-        </div>
-        <div class="form-group">
-            <input class="form-control" name="password-confirm" placeholder="Confirm password" type="password">
-        </div>
-        <button class="btn btn-primary" type="submit">Register</button>
-    </form>
-{% endblock %}
-"""
