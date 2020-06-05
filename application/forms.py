@@ -1,6 +1,6 @@
 from flask import session, flash
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, IntegerField
 from wtforms.validators import DataRequired, Length, EqualTo, ValidationError
 from .models import User
 from .exceptions import invaldPasswordError, userNotFoundError
@@ -46,4 +46,17 @@ class LoginForm(FlaskForm):
     remember = BooleanField("Remember me")
     submit = SubmitField("Login")
 
+def validBuyAmount(form, field):
+    if form.shares_button.data:
+        print("I think the user wants to refresh amount. Amount is: {}".format(form.shares.data))
 
+def validSymbol(form, field):
+    if form.search_button.data:
+        print("I think user is searching for a symbol. Looking up field data: {}".format(form.search.data))
+
+class BuyForm(FlaskForm):
+    search = StringField("Search", id="symbolInput" validators=[validSymbol])
+    shares = IntegerField("Shares", id="amountInput", valiators=[validBuyAmount])
+    search_button = SubmitField("Search", id="symbolBtn")
+    shares_button = SubmitField("Refresh", id="amountBtn")
+    submit_button = SubmitField("Buy")

@@ -3,7 +3,7 @@ from flask import session, request, redirect, render_template, flash, jsonify, u
 from .helpers import login_required, apology, lookup, usd, \
     setSessionStock, clearSessionExcept
 from .models import User
-from .forms import RegistrationForm, LoginForm
+from .forms import RegistrationForm, LoginForm, BuyForm
 from werkzeug.exceptions import default_exceptions, HTTPException, \
     InternalServerError
 
@@ -84,6 +84,76 @@ def buy():
     # method is get
     else:
         return render_template("/buy.html")
+
+
+@app.route("/by", methods=["GET", "POST"])
+@login_required
+def by():
+
+    form = BuyForm
+
+    if request.method == "POST":
+
+        user = User.query.filter_by(id=session["user_id"]).first_or_404()
+
+        # setSessionStock initiates or refreshes session stock info
+        setSessionStock("buystock")
+
+        # SEARCH
+        if form.search_button.data:
+
+            print("views: search btn pressed")
+            """
+            symbol = request.form.get("symbol")
+            print("User searched for {}".format(symbol))
+            # Refresh stock info and reset amount if new symbol/stock search
+            try:
+                setSessionStock("buystock", symbol=symbol)
+            except Exception as e:
+                flash(u"{}".format(e), "danger")
+            """
+
+
+        # REFRESH
+        elif form.shares_button.data:
+            print("Views: refresh btn")
+            """
+            # User refreshed amount. Refresh total if amount > 0. Else
+            amount = int(request.form.get("shares"))
+            try:
+                setSessionStock("buystock", session["buystock"]["symbol"], amount=amount)
+            except Exception as e:
+                flash(u"{}".format(e), "danger")
+            """
+
+        # BUY
+        else:
+            print("Buy button data is: {}".format(form.submit_button.data))
+            """
+            # User decided to buy a stock. Buy and reset "buystock" in session
+            try:
+                user.buy(session["buystock"]["symbol"], session["buystock"]["amount"])
+                flash(u"Purhased {} {}".format(
+                    session["buystock"]["amount"], session["buystock"]["name"]), "success")
+                print("User bought {} {}".format(session["buystock"]["amount"], session["buystock"]["name"]))
+                session["buystock"] = {}
+                session["cash"] = user.cash
+            except Exception as e:
+                flash(f"{e}", "danger")
+            """
+
+        """
+        # Refresh total (amount is handled )
+        if ("price" in session["buystock"]) and ("amount" in session["buystock"]):
+            session["buystock"]["buytotal"] = float(
+                session["buystock"]["amount"]) * float(session["buystock"]["price"])
+        """
+
+        return redirect(request.url)
+
+    # method is get
+    else:
+        return render_template("/by.html")
 
 
 @app.route("/history")
