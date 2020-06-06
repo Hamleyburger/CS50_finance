@@ -51,12 +51,13 @@ def validBuyAmount(form, field):
         print("I think the user wants to refresh amount. Amount is: {}".format(form.shares.data))
 
 def validSymbol(form, field):
-    if form.search_button.data:
-        print("I think user is searching for a symbol. Looking up field data: {}".format(form.search.data))
+    print(form.search_button.data)
+    #if form.search_button.data:
+     #   print("I think user is searching for a symbol. Looking up field data: {}".format(form.search.data))
 
 class BuyForm(FlaskForm):
-    search = StringField("Search", id="symbolInput" validators=[validSymbol])
-    shares = IntegerField("Shares", id="amountInput", valiators=[validBuyAmount])
+    search = StringField("Search", id="symbolInput", validators=[validSymbol])
+    shares = IntegerField("Shares", id="amountInput", validators=[validBuyAmount])
     search_button = SubmitField("Search", id="symbolBtn")
     shares_button = SubmitField("Refresh", id="amountBtn")
     submit_button = SubmitField("Buy")
