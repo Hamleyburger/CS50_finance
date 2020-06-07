@@ -98,12 +98,16 @@ def by():
     # ===== temporary for debugging end
 
     form = BuyForm()
+    setSessionStock("buystock")
 
     #TODO: search field had been added. Add all the other fields and check how POST responds
 
     if request.method == "POST":
         print("POOOOOOOOOOOOST!")
-        print(form.validate())
+        form.validate_on_submit()
+        print(type(form.shares.data))
+        print(form.shares.data)
+        print(form.search.data)
         print(form.errors)
     return render_template("/by.html", form=form)
 

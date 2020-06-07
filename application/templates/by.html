@@ -12,7 +12,7 @@
                 {{ form.search(class="form-control is-invalid", autocomplete="off", autofocus=true, placeholder="Input symbol") }}
                 <div class="input-group-append">
                     <! -- search button -->
-                        {{ form.search_button(class="mybtn btn btn-outline-secondary", style="border-radius: 0.25rem;", type="submit") }}
+                        {{ form.search_button(class="mybtn btn btn-outline-secondary fa-text", style="border-radius: 0.25rem;", type="submit", value="&#xf002;"|safe) }}
                 </div>
                 <div class="invalid-feedback" style="text-align: left;">
                     {% for error in form.search.errors %}
@@ -23,7 +23,7 @@
                 {{ form.search(class="form-control", autocomplete="off", autofocus=true, placeholder="Input symbol") }}
                 <div class="input-group-append">
                     <! -- search button -->
-                        {{ form.search_button(class="mybtn btn btn-outline-secondary", autocomplete="off", type="submit") }}
+                        {{ form.search_button(class="mybtn btn btn-outline-secondary fa-text", autocomplete="off", type="submit", value="&#xf002;"|safe, style="border-radius: 0.25rem;") }}
                 </div>
                 {% endif %}
             </div>
@@ -59,23 +59,40 @@
                 justify-content: flex-end;
                 align-items: center;
               ">
+                                        <!--Price to the left of input field-->
                                         <span>
                                             <strong>{{"$%.2f"|format(buyDict["price"]) }}
                                                 <span class="text-muted" style="padding-right: 4px;">x</span></strong>
                                         </span>
-
+                                        {% if form.shares.errors %}
                                         <div class="input-group float-right" style="max-width: 100px;">
-                                            {{ form.shares(class="form-control", autocomplete="off", autofocus=true, step="1", max="99",
-                                            min="1", value=session['buystock']['amount'], size="4") }}
+                                            {{ form.shares(class="form-control is-invalid", autocomplete="off", autofocus=true, value=session['buystock']['amount'], size="4") }}
                                             <div class="input-group-append">
-                                                <! -- refresh button -->
-                                                    {{ form.shares_button(class="mybtn btn btn-outline-secondary", style="width:
-                                                    58px;", value=':D') }}
+                                                <!-- refresh button -->
+                                                {{ form.shares_button(class="mybtn btn btn-outline-secondary fa-text", value="&#xf2f1;"|safe, style="border-radius: 0.25rem;") }}
                                             </div>
                                         </div>
+                                        {% else %}
+                                        <!--Number input field for refresh button-->
+                                        <div class="input-group float-right" style="max-width: 100px;">
+                                            {{ form.shares(class="form-control", autocomplete="off", autofocus=true, value=session['buystock']['amount'], size="4") }}
+                                            <div class="input-group-append">
+                                                <!-- refresh button -->
+                                                {{ form.shares_button(class="mybtn btn btn-outline-secondary fa-text", value="&#xf2f1;"|safe, style="border-radius: 0.25rem;") }}
+                                            </div>
+                                        </div>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
+                            {% if form.shares.errors %}
+                            <div class="feedback"
+                                style="text-align: right; margin-right: -12px; color: #dc3545; font-size: 80%;">
+
+                                <span>{{ form.shares.errors[0] }}</span>
+
+                            </div>
+                            {% endif %}
                         </div>
                         <hr />
                         <!-- END PRODUCT -->

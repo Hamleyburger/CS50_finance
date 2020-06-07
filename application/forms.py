@@ -7,6 +7,7 @@ from .helpers import setSessionStock
 from .exceptions import invaldPasswordError, userNotFoundError, invalidSymbolError, zeroTransactionError
 
 
+
 def uniqueUser(form, field):
     if User.get(field.data):
         raise ValidationError('Username is already taken')
@@ -51,10 +52,15 @@ def validBuyAmount(form, field):
     if form.shares_button.data:
         # User refreshed amount. Refresh total if amount > 0. Else
         amount = field.data
-        try:
-            setSessionStock("buystock", session["buystock"]["symbol"], amount=amount)
-        except zeroTransactionError as e:
-            raise ValidationError(e)
+        print("field data amount: {}".format(field.data))
+        user = User.query.filter_by(id=session["user_id"]).first()
+        if user.cash > float(2000):
+            try:
+                setSessionStock(keyString="buystock", amount=amount)
+            except zeroTransactionError as e:
+                raise ValidationError(e)
+        else:
+            raise ValidationError("Yown less than 2000")
 
 
 def validSymbol(form, field):
@@ -75,6 +81,6 @@ def validSymbol(form, field):
 class BuyForm(FlaskForm):
     search = StringField("Search", id="symbolInput", validators=[validSymbol])
     search_button = SubmitField("Search", id="symbolBtn")
-    shares = IntegerField("Shares", id="amountInput", validators=[NumberRange(min=1, max=99, message='Must be between 1 and 99'), validBuyAmount])
+    shares = IntegerField("Shares", id="amountInput", validators=[validBuyAmount])
     shares_button = SubmitField("Refresh", id="amountBtn")
     submit_button = SubmitField("Buy")

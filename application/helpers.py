@@ -91,7 +91,7 @@ def setSessionStock(keyString, symbol=None, amount=None):
     if keyString not in session:
         # if key not in session, make it exist to be searchable
         session[keyString] = {}
-        session[keyString]["amount"] = 1
+        session[keyString]["amount"] = int(1)
     if symbol:
         oldsymbol = ""
         if "symbol" in session[keyString]:
@@ -100,7 +100,8 @@ def setSessionStock(keyString, symbol=None, amount=None):
             lookupRepopulate(session[keyString], symbol)
             if oldsymbol.lower() != symbol.lower():
                 # if it's a different symbol from before, amount is 1
-                amount = 1
+                print("new symbol, reset amount")
+                amount = int(1)
         except invalidSymbolError:
             raise
 
@@ -116,7 +117,9 @@ def setSessionStock(keyString, symbol=None, amount=None):
 
     if amount is not None:
         if amount > 0:
-            session[keyString]["amount"] = amount
+            print("changing amount")
+            session[keyString]["amount"] = int(amount)
+            print("to {}".format(amount))
         else:
             raise zeroTransactionError
 
