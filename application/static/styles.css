@@ -105,13 +105,13 @@ main img {
   background-color: rgba(133, 251, 255, 0.301);
 }
 
-.product-container .mybtn {
+.mybtn {
   color: #fff;
   background-color: #6c757d;
   border-color: #6c757d;
 }
 
-.product-container .mybtn:hover {
+.mybtn:hover {
   background-color: #84e6ff;
   border-color: #4d7a64;
 }

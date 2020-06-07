@@ -8,6 +8,7 @@ import datetime
 
 from flask import redirect, render_template, request, session, flash
 from functools import wraps
+from .exceptions import invalidSymbolError, zeroTransactionError
 
 
 def apology(message, code=400):
@@ -100,7 +101,7 @@ def setSessionStock(keyString, symbol=None, amount=None):
             if oldsymbol.lower() != symbol.lower():
                 # if it's a different symbol from before, amount is 1
                 amount = 1
-        except Exception:
+        except invalidSymbolError:
             raise
 
     # No symbol was passed in. Refresh currect info if exists
@@ -109,15 +110,15 @@ def setSessionStock(keyString, symbol=None, amount=None):
 
         try:
             lookupRepopulate(session[keyString], symbol)
-        except Exception:
+        except invalidSymbolError:
             print("Invalid symbol has somehow entered database")
             raise
 
-    if amount:
+    if amount is not None:
         if amount > 0:
             session[keyString]["amount"] = amount
         else:
-            raise Exception("You can't trade less than 1")
+            raise zeroTransactionError
 
 
 def lookupRepopulate(receivingDict, symbol):
@@ -127,4 +128,4 @@ def lookupRepopulate(receivingDict, symbol):
         for newKey, newValue in dict.items():
             receivingDict[newKey] = newValue
     else:
-        raise Exception("Could not find stock symbol in database")
+        raise invalidSymbolError

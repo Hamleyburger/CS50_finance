@@ -99,9 +99,12 @@ def by():
 
     form = BuyForm()
 
+    #TODO: search field had been added. Add all the other fields and check how POST responds
+
     if request.method == "POST":
-        print(dir(form.search))
-    
+        print("POOOOOOOOOOOOST!")
+        print(form.validate())
+        print(form.errors)
     return render_template("/by.html", form=form)
 
 
