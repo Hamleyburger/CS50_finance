@@ -2,7 +2,7 @@ from flask import session, flash
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, BooleanField, IntegerField
 from wtforms.validators import DataRequired, Length, EqualTo, ValidationError, NumberRange
-from .models import User
+from .models import User 
 from .helpers import setSessionStock
 from .exceptions import invaldPasswordError, userNotFoundError, invalidSymbolError, zeroTransactionError
 
@@ -50,24 +50,23 @@ class LoginForm(FlaskForm):
 
 def validBuyAmount(form, field):
     if form.shares_button.data:
+        print("pressed refresh button")
         # User refreshed amount. Refresh total if amount > 0. Else
-        amount = field.data
-        print("field data amount: {}".format(field.data))
+        amount = form.shares.data
         user = User.query.filter_by(id=session["user_id"]).first()
-        if user.cash > float(2000):
+        if float(user.cash) > (float(user.cash) * session["buystock"]["price"]):
             try:
                 setSessionStock(keyString="buystock", amount=amount)
             except zeroTransactionError as e:
                 raise ValidationError(e)
         else:
-            raise ValidationError("Yown less than 2000")
+            raise ValidationError("You ain't got it")
 
 
 def validSymbol(form, field):
     if form.search_button.data:
         print("pressed search button")
         if form.search.data == "":
-            print("You are not searching for anything")
             raise ValidationError("Search field empty")
         else:
             try:
@@ -79,8 +78,8 @@ def validSymbol(form, field):
      #   print("I think user is searching for a symbol. Looking up field data: {}".format(form.search.data))
 
 class BuyForm(FlaskForm):
-    search = StringField("Search", id="symbolInput", validators=[validSymbol])
+    search = StringField("Search", id="symbolInput", render_kw={"placeholder": "Search for symbol"}, validators=[validSymbol])
     search_button = SubmitField("Search", id="symbolBtn")
-    shares = IntegerField("Shares", id="amountInput", validators=[validBuyAmount])
+    shares = IntegerField("Shares", id="amountInput", default=1, validators=[validBuyAmount])
     shares_button = SubmitField("Refresh", id="amountBtn")
     submit_button = SubmitField("Buy")

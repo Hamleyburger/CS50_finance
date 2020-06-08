@@ -2,7 +2,7 @@ from application import app
 from flask import session, request, redirect, render_template, flash, jsonify, url_for
 from .helpers import login_required, apology, lookup, usd, \
     setSessionStock, clearSessionExcept
-from .models import User
+from .models import User, Stock
 from .forms import RegistrationForm, LoginForm, BuyForm
 from werkzeug.exceptions import default_exceptions, HTTPException, \
     InternalServerError
@@ -75,6 +75,7 @@ def buy():
                 flash(f"{e}", "danger")
 
         # Refresh total (amount is handled )
+        print("refresh total")
         if ("price" in session["buystock"]) and ("amount" in session["buystock"]):
             session["buystock"]["buytotal"] = float(
                 session["buystock"]["amount"]) * float(session["buystock"]["price"])
@@ -104,11 +105,17 @@ def by():
 
     if request.method == "POST":
         print("POOOOOOOOOOOOST!")
-        form.validate_on_submit()
-        print(type(form.shares.data))
-        print(form.shares.data)
-        print(form.search.data)
+        if form.validate_on_submit():
+            print(type(form.shares.data))
+            print(form.shares.data)
+            print(form.search.data)
+            # write a validator for buy button that tries to buy and returns error if it doesn't work
+            # if it did flash a happy flash
+            return redirect(url_for("by"))
         print(form.errors)
+
+
+
     return render_template("/by.html", form=form)
 
 

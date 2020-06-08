@@ -9,7 +9,7 @@
         <! –– search bar ––>
             <div class="input-group">
                 {% if form.search.errors %}
-                {{ form.search(class="form-control is-invalid", autocomplete="off", autofocus=true, placeholder="Input symbol") }}
+                {{ form.search(class="form-control is-invalid", autocomplete="off", autofocus=true) }}
                 <div class="input-group-append">
                     <! -- search button -->
                         {{ form.search_button(class="mybtn btn btn-outline-secondary fa-text", style="border-radius: 0.25rem;", type="submit", value="&#xf002;"|safe) }}
@@ -20,7 +20,7 @@
                     {% endfor %}
                 </div>
                 {% else %}
-                {{ form.search(class="form-control", autocomplete="off", autofocus=true, placeholder="Input symbol") }}
+                {{ form.search(class="form-control", autocomplete="off", autofocus=true) }}
                 <div class="input-group-append">
                     <! -- search button -->
                         {{ form.search_button(class="mybtn btn btn-outline-secondary fa-text", autocomplete="off", type="submit", value="&#xf002;"|safe, style="border-radius: 0.25rem;") }}

@@ -87,7 +87,6 @@ def setSessionStock(keyString, symbol=None, amount=None):
     """ keyString is required: The key for the session entry for stock info.\n
     symbol is optional: if passed in session is repopulated\n
     amount is optional: if passed in amount of stock in question is changed. """
-
     if keyString not in session:
         # if key not in session, make it exist to be searchable
         session[keyString] = {}
@@ -100,7 +99,6 @@ def setSessionStock(keyString, symbol=None, amount=None):
             lookupRepopulate(session[keyString], symbol)
             if oldsymbol.lower() != symbol.lower():
                 # if it's a different symbol from before, amount is 1
-                print("new symbol, reset amount")
                 amount = int(1)
         except invalidSymbolError:
             raise
@@ -117,11 +115,14 @@ def setSessionStock(keyString, symbol=None, amount=None):
 
     if amount is not None:
         if amount > 0:
-            print("changing amount")
             session[keyString]["amount"] = int(amount)
-            print("to {}".format(amount))
+
         else:
             raise zeroTransactionError
+    # Refresh total ( amount is handled )
+    if ("price" in session["buystock"]) and ("amount" in session["buystock"]):
+        session[keyString]["buytotal"] = float(
+            session[keyString]["amount"]) * float(session[keyString]["price"])
 
 
 def lookupRepopulate(receivingDict, symbol):
