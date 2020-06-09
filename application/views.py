@@ -26,7 +26,7 @@ def index():
     """Show portfolio of stocks"""
     return redirect(url_for("sell"))
 
-
+"""
 @app.route("/buy", methods=["GET", "POST"])
 @login_required
 def buy():
@@ -85,38 +85,23 @@ def buy():
     # method is get
     else:
         return render_template("/buy.html")
+"""
 
-
-@app.route("/by", methods=["GET", "POST"])
-# @login_required
-def by():
-
-    # ===== temporary for debugging start
-    session["user_id"] = 1
-    user = User.query.filter_by(id=session["user_id"]).first_or_404()
-    session["username"] = user.username
-    session["cash"] = user.cash
-    # ===== temporary for debugging end
+@app.route("/buy", methods=["GET", "POST"])
+@login_required
+def buy():
 
     form = BuyForm()
     setSessionStock("buystock")
 
-    #TODO: search field had been added. Add all the other fields and check how POST responds
-
     if request.method == "POST":
-        print("POOOOOOOOOOOOST!")
+
         if form.validate_on_submit():
-            print(type(form.shares.data))
-            print(form.shares.data)
-            print(form.search.data)
-            # write a validator for buy button that tries to buy and returns error if it doesn't work
-            # if it did flash a happy flash
-            return redirect(url_for("by"))
+            return redirect(url_for("buy"))
+        
         print(form.errors)
 
-
-
-    return render_template("/by.html", form=form)
+    return render_template("/buy.html", form=form)
 
 
 @app.route("/history")

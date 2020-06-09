@@ -126,6 +126,7 @@ def setSessionStock(keyString, symbol=None, amount=None):
 
 
 def lookupRepopulate(receivingDict, symbol):
+    print("lookup repop")
     # repopulates keys returned from lookup and leaves the rest be
     dict = lookup(symbol)
     if dict:
