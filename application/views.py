@@ -3,7 +3,7 @@ from flask import session, request, redirect, render_template, flash, jsonify, u
 from .helpers import login_required, apology, lookup, usd, \
     setSessionStock, clearSessionExcept
 from .models import User, Stock
-from .forms import RegistrationForm, LoginForm, BuyForm
+from .forms import RegistrationForm, LoginForm, BuyForm, SellForm
 from werkzeug.exceptions import default_exceptions, HTTPException, \
     InternalServerError
 
@@ -77,7 +77,7 @@ def buy():
         # Refresh total (amount is handled )
         print("refresh total")
         if ("price" in session["buystock"]) and ("amount" in session["buystock"]):
-            session["buystock"]["buytotal"] = float(
+            session["buystock"]["total"] = float(
                 session["buystock"]["amount"]) * float(session["buystock"]["price"])
 
         return redirect(request.url)
@@ -181,14 +181,14 @@ def login():
     # User GET to get here
     return render_template("login.html", form=form)
 
-
+"""
 @app.route("/sell", methods=["GET"])
 @app.route("/sell/<symbol>", methods=["GET", "POST"])
 @login_required
 #@login_required
 def sell(symbol=None):
 
-    """Sell shares of stock"""
+    #Sell shares of stock
     user = User.query.filter_by(id=session["user_id"]).first_or_404()
     stocks = user.ownedStocks()
 
@@ -207,7 +207,7 @@ def sell(symbol=None):
             if symbol.upper() == stock.symbol.upper():
                 # Update "sellstock" and offer to sell
                 setSessionStock("sellstock", symbol=symbol)
-                session["sellstock"]["selltotal"] = float(
+                session["sellstock"]["total"] = float(
                 session["sellstock"]["amount"]) * float(session["sellstock"]["price"])
 
                 # GET offers to sell, POST sells and redirects
@@ -239,9 +239,72 @@ def sell(symbol=None):
                     return redirect(request.url)
 
         return redirect(url_for("sell"))
+"""
+
+@app.route("/sell", methods=["GET"])
+@app.route("/sell/<symbol>", methods=["GET", "POST"])
+@login_required
+#@login_required
+def sell(symbol=None):
+
+    """Sell shares of stock"""
+    user = User.query.filter_by(id=session["user_id"]).first_or_404()
+    stocks = user.ownedStocks()
+
+    if not symbol:
+        # Show a list where user can click and choose symbol form its own collection
+        grand_total = 0.0
+        for stock in stocks:
+            grand_total += float(stock.price * stock.amount)
+        grand_total += float(user.cash)
+
+        return render_template("/sell.html", stocks=stocks, grand_total=grand_total)
+
+    else:
+        # There's a symbol. Render a form for interacting with symbol.
+        # Check that symbol is in user's owned list
+        for stock in stocks:
+            if symbol.upper() == stock.symbol.upper():
+                # Update "sellstock" and offer to sell
+                setSessionStock("sellstock", symbol=symbol)
+                
+                print("initiate form. Print form and session.")
+                form = SellForm()
+                form.owned = stock.amount
+                print("amount owned now: {}".format(form.owned))
+                print(form)
+                print(session)
+
+                # GET offers to sell, POST sells and redirects
+                if request.method == "GET":
+                    return render_template("/hellform.html", stock=stock, form=form)
+                elif request.method == "POST":
+
+                    print(f"form validates to: {form.validate_on_submit()}")
+                    print(form.errors)
+                    # DEAL WITH REFRESH BUTTON
+                    if 1 == 1:
+                        print("random code")
+                    # DEAL WITH SELL BUTTON
+                    else:
+                        # Sell stock of given amount
+                        try:
+                            print("User is selling {} {}".format(stock.symbol, session["sellstock"]["amount"]))
+                            user.sell(stock.symbol, session["sellstock"]["amount"])
+                            flash(u"Sold {} items of {}".format(session["sellstock"]["amount"], stock.name), "success")
+                            setSessionStock("sellstock", amount=1)
+                            session["cash"] = user.cash
+                            return redirect(url_for("sell"))
+
+                    
+                        except Exception as e:
+                            flash(u"{}".format(e), "danger")
 
 
+                    # in any case return self
+                    return redirect(request.url)
 
+        return redirect(url_for("sell"))
 
 
 

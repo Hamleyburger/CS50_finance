@@ -116,17 +116,16 @@ def setSessionStock(keyString, symbol=None, amount=None):
     if amount is not None:
         if amount > 0:
             session[keyString]["amount"] = int(amount)
-
         else:
             raise zeroTransactionError
     # Refresh total ( amount is handled )
-    if ("price" in session["buystock"]) and ("amount" in session["buystock"]):
-        session[keyString]["buytotal"] = float(
+    if ("price" in session[keyString]) and ("amount" in session[keyString]):
+        print("refresh total from helpers")
+        session[keyString]["total"] = float(
             session[keyString]["amount"]) * float(session[keyString]["price"])
 
 
 def lookupRepopulate(receivingDict, symbol):
-    print("lookup repop")
     # repopulates keys returned from lookup and leaves the rest be
     dict = lookup(symbol)
     if dict:

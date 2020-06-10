@@ -104,3 +104,58 @@ class BuyForm(FlaskForm):
     shares = IntegerField("Shares", id="amountInput", default=1, validators=[validBuyAmount])
     shares_button = SubmitField("Refresh", id="amountBtn")
     submit_button = SubmitField("Buy", validators=[allowBuy])
+
+
+
+def validSellAmount(form, field):
+
+    if form.shares_button.data:
+        print("refresh btn pressed")
+        # Refresh amount to sell
+        amount = field.data
+        print(f"amount attempted: {amount}")
+        user = User.query.filter_by(id=session["user_id"]).first()
+        owned = None
+        try:
+            owned = user.amountOwned(session["sellstock"]["symbol"])
+        except Exception:
+            raise ValidationError("Session error")
+
+        if amount > owned:
+            raise ValidationError("You only own {}".format(owned))
+        
+        try:
+            setSessionStock("sellstock", amount=amount)
+        except Exception as e:
+            raise ValidationError(e)
+
+        #elif amount > int(stock.amount):
+            #flash(u"You only own {} {} stocks.".format(stock.amount, stock.name), "danger")
+        #else:
+            #setSessionStock("sellstock", amount=amount)
+
+def allowSell(form, field):
+    pass
+
+class SellForm(FlaskForm):
+
+    shares = IntegerField("Shares", default=1, validators=[validSellAmount])
+    shares_button = SubmitField("Refresh")
+    submit_button = SubmitField("Sell", validators=[allowSell])
+
+"""
+
+<input class="form-control" type="number" step="1" max="99" min="1"
+    value="{{ session['sellstock']['amount'] }}" title="Qty" size="4" name="shares"
+    style="width: 58px;" />
+
+<button type="submit" name="submit-button" value="refresh"
+    class="mybtn btn btn-outline-secondary">
+    <i class="fas fa-sync-alt"></i>
+</button>
+
+<button class="mybtn btn btn-primary" type="submit" name="submit-button" value="sell">
+    Sell
+</button>
+
+"""
