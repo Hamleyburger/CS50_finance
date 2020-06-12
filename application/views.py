@@ -253,6 +253,8 @@ def sell(symbol=None):
 
     if not symbol:
         # Show a list where user can click and choose symbol form its own collection
+
+        # calculate grad total of shares + cash
         grand_total = 0.0
         for stock in stocks:
             grand_total += float(stock.price * stock.amount)
@@ -268,10 +270,7 @@ def sell(symbol=None):
                 # Update "sellstock" and offer to sell
                 setSessionStock("sellstock", symbol=symbol)
                 
-                print("initiate form. Print form and session.")
-                form = SellForm()
-                form.owned = stock.amount
-                print("amount owned now: {}".format(form.owned))
+                form = SellForm(user=user, stock=stock)
                 print(form)
                 print(session)
 
@@ -280,35 +279,15 @@ def sell(symbol=None):
                     return render_template("/hellform.html", stock=stock, form=form)
                 elif request.method == "POST":
 
-                    print(f"form validates to: {form.validate_on_submit()}")
+                    if form.validate_on_submit():
+                        # Each button in form has a validator that refreshes or sells.
+                        return redirect(request.url)
+
+                    # form couldn't validate
                     print(form.errors)
-                    # DEAL WITH REFRESH BUTTON
-                    if 1 == 1:
-                        print("random code")
-                    # DEAL WITH SELL BUTTON
-                    else:
-                        # Sell stock of given amount
-                        try:
-                            print("User is selling {} {}".format(stock.symbol, session["sellstock"]["amount"]))
-                            user.sell(stock.symbol, session["sellstock"]["amount"])
-                            flash(u"Sold {} items of {}".format(session["sellstock"]["amount"], stock.name), "success")
-                            setSessionStock("sellstock", amount=1)
-                            session["cash"] = user.cash
-                            return redirect(url_for("sell"))
-
-                    
-                        except Exception as e:
-                            flash(u"{}".format(e), "danger")
-
-
-                    # in any case return self
                     return redirect(request.url)
 
         return redirect(url_for("sell"))
-
-
-
-
 
 
 def errorhandler(e):

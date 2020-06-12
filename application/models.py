@@ -81,7 +81,7 @@ class User(db.Model):
 
         for stock in ownedStocks:
             stock.Stock.amount = stock.amount
-            stock.Stock.price = lookup(stock.Stock.symbol)["price"]
+            stock.Stock.price = float(lookup(stock.Stock.symbol)["price"])
             stock = stock.Stock
             stocksWithPrices.append(stock)
 
@@ -111,9 +111,9 @@ class User(db.Model):
                 pricetotal = stock.total
 
                 # Make the transaction: withdraw money, remove amount of owned stocks
-                self.cash += pricetotal
+                self.cash += decimal.Decimal(pricetotal)
                 Owned.remove(self, symbol, amount)
-                sale = Sales(stock_id=stock.id, amount=amount, unit_price=stock.price, total_price=stock.total)
+                sale = Sales(stock_id=stock.id, amount=amount, unit_price=decimal.Decimal(stock.price), total_price=stock.total)
                 self.sales.append(sale)
                 db.session.commit()
                 return True
@@ -135,14 +135,14 @@ class User(db.Model):
             stock = Stock.get(symbol, amount)
             if stock:
                 pricetotal = stock.total
-                if self.cash < pricetotal:
+                if self.cash < decimal.Decimal(pricetotal):
                     # User can't afford
                     raise Exception("Insufficient funds")
                 else:
                     # Purchase goes through. Withdraw money, add to Owned and Purchases tables
-                    self.cash -= pricetotal
+                    self.cash -= decimal.Decimal(pricetotal)
                     Owned.add(self, stock, amount)
-                    purchase = Purchases(stock_id=stock.id, amount=amount, unit_price=stock.price, total_price=pricetotal)
+                    purchase = Purchases(stock_id=stock.id, amount=amount, unit_price=decimal.Decimal(stock.price), total_price=pricetotal)
                     self.purchases.append(purchase)
                     db.session.commit()
 
@@ -163,7 +163,7 @@ class User(db.Model):
             tempDict = row._asdict()
             tempDict["time"] = tempDict["time"].isoformat()
             tempDict["type"] = "purchase"
-            tempDict["total_price"] = "-{:.2f}".format(tempDict["total_price"])
+            tempDict["total_price"] = "-{:.2f}".format(float(tempDict["total_price"]))
             transactionHistory.append(tempDict)
 
         saleQuery = q(Sales.amount, Sales.total_price, Sales.time, Stock.symbol, Stock.name).filter(Sales.user_id == self.id).join(Stock, Stock.id == Sales.stock_id).group_by(Sales.id)
@@ -171,7 +171,7 @@ class User(db.Model):
             tempDict2 = row._asdict()
             tempDict2["time"] = tempDict2["time"].isoformat()
             tempDict2["type"] = "sale"
-            tempDict2["total_price"] = "{:+.2f}".format(tempDict2["total_price"])
+            tempDict2["total_price"] = "{:+.2f}".format(float(tempDict2["total_price"]))
             transactionHistory.append(tempDict2)
 
         # Sort the list by time descending and return it
@@ -199,7 +199,7 @@ class Stock(db.Model):
         # If we've reached here symbol was valid
         stockSymbol = stockDict["symbol"]
         stockName = stockDict["name"]
-        stockPrice = stockDict["price"]
+        stockPrice = float(stockDict["price"])
 
         # If this stock is already in database - use it!
         stock = cls.query.filter_by(symbol=stockSymbol).first()
@@ -210,7 +210,7 @@ class Stock(db.Model):
             db.session.add(stock)
             #db.session.commit()
 
-        stock.price = decimal.Decimal(stockPrice)
+        stock.price = stockPrice
         stock.amount = amount if amount >= 1 else 1
         stock.total = stock.amount * stock.price
         # Return whatever stock ended up being set to

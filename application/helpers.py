@@ -131,5 +131,8 @@ def lookupRepopulate(receivingDict, symbol):
     if dict:
         for newKey, newValue in dict.items():
             receivingDict[newKey] = newValue
+
+            if newKey == "price":
+                print("price in lookup repop: {}".format(newValue))
     else:
         raise invalidSymbolError

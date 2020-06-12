@@ -1,11 +1,10 @@
 from flask import session, flash
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, BooleanField, IntegerField
-from wtforms.validators import DataRequired, Length, EqualTo, ValidationError, NumberRange
-from .models import User 
+from wtforms.validators import DataRequired, Length, EqualTo, ValidationError
+from .models import User
 from .helpers import setSessionStock
 from .exceptions import invaldPasswordError, userNotFoundError, invalidSymbolError, zeroTransactionError
-
 
 
 def uniqueUser(form, field):
@@ -48,16 +47,17 @@ class LoginForm(FlaskForm):
     remember = BooleanField("Remember me")
     submit = SubmitField("Login")
 
+
 def validBuyAmount(form, field):
     if form.shares_button.data:
         # User refreshed amount. Refresh if > 0 and user can afford
         amount = form.shares.data
-        user = User.query.filter_by(id=session["user_id"]).first()
+        user = form.user
 
         canAfford = False
 
         try:
-            canAfford = (float(user.cash) > (float(amount) * session["buystock"]["price"]))
+            canAfford = (float(user.cash) > (float(amount) * form.stock.price))
         except Exception:
             raise ValidationError("Something is not right. Try reloading.")
         
@@ -73,7 +73,6 @@ def validBuyAmount(form, field):
             raise ValidationError("Can't afford!")
 
 
-
 def validSymbol(form, field):
     if form.search_button.data:
         if form.search.data == "":
@@ -84,19 +83,22 @@ def validSymbol(form, field):
             except invalidSymbolError as e:
                 raise ValidationError(u"{}".format(e))
 
+
 def allowBuy(form, field):
     if form.submit_button.data:
         user = User.query.filter_by(id=session["user_id"]).first()
+        stock = form.stock
         try:
-            user.buy(session["buystock"]["symbol"], session["buystock"]["amount"])
+            user.buy(stock.symbol, session["buystock"]["amount"])
             flash(u"Purhased {} {}".format(
-                session["buystock"]["amount"], session["buystock"]["name"]), "success")
-            print("User bought {} {}".format(session["buystock"]["amount"], session["buystock"]["name"]))
+                session["buystock"]["amount"], stock.name), "success")
+            print("User bought {} {}".format(session["buystock"]["amount"], stock.name))
             session["buystock"] = {}
             session["cash"] = user.cash
         except Exception as e:
             flash(f"{e}", "danger")
             raise ValidationError(e)
+
 
 class BuyForm(FlaskForm):
     search = StringField("Search", id="symbolInput", render_kw={"placeholder": "Search for symbol"}, validators=[validSymbol])
@@ -106,36 +108,41 @@ class BuyForm(FlaskForm):
     submit_button = SubmitField("Buy", validators=[allowBuy])
 
 
-
 def validSellAmount(form, field):
 
     if form.shares_button.data:
         print("refresh btn pressed")
         # Refresh amount to sell
         amount = field.data
-        print(f"amount attempted: {amount}")
         user = User.query.filter_by(id=session["user_id"]).first()
-        owned = None
-        try:
-            owned = user.amountOwned(session["sellstock"]["symbol"])
-        except Exception:
-            raise ValidationError("Session error")
+        stock = form.stock
+        owned = stock.amount
 
         if amount > owned:
             raise ValidationError("You only own {}".format(owned))
-        
+
         try:
             setSessionStock("sellstock", amount=amount)
         except Exception as e:
             raise ValidationError(e)
 
-        #elif amount > int(stock.amount):
-            #flash(u"You only own {} {} stocks.".format(stock.amount, stock.name), "danger")
-        #else:
-            #setSessionStock("sellstock", amount=amount)
 
 def allowSell(form, field):
-    pass
+    if field.data:
+        user = form.user
+        stock = form.stock
+        print("allowSell recognzes {} as user".format(user.username))
+        try:
+            print("User is selling {} {}".format(stock.symbol, session["sellstock"]["amount"]))
+            user.sell(stock.symbol, session["sellstock"]["amount"])
+            flash(u"Sold {} items of {}".format(session["sellstock"]["amount"], stock.name), "success")
+            setSessionStock("sellstock", amount=1)
+            session["cash"] = float(user.cash)
+
+        except Exception as e:
+            flash(u"{}".format(e), "danger")
+            raise ValidationError(e)
+
 
 class SellForm(FlaskForm):
 
@@ -143,19 +150,8 @@ class SellForm(FlaskForm):
     shares_button = SubmitField("Refresh")
     submit_button = SubmitField("Sell", validators=[allowSell])
 
-"""
-
-<input class="form-control" type="number" step="1" max="99" min="1"
-    value="{{ session['sellstock']['amount'] }}" title="Qty" size="4" name="shares"
-    style="width: 58px;" />
-
-<button type="submit" name="submit-button" value="refresh"
-    class="mybtn btn btn-outline-secondary">
-    <i class="fas fa-sync-alt"></i>
-</button>
-
-<button class="mybtn btn btn-primary" type="submit" name="submit-button" value="sell">
-    Sell
-</button>
-
-"""
+    def __init__(self, user, stock, *args, **kwargs):
+        super(SellForm, self).__init__(*args, **kwargs)
+        self.user = user
+        self.stock = stock
+        print("initiated and set user to {}".format(user))
