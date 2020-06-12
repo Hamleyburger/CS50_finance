@@ -11,11 +11,6 @@ An assignment for the web track in CS50 Introduction to Computer Science. Assign
 
 ____________________________________________________________________________________
 
-
-This was the assignment specification:
-link: https://cs50.harvard.edu/x/2020/tracks/web/finance/
-
-____________________________________________________________________________________
 Specification
 register
 Complete the implementation of register in such a way that it allows a user to register for an account via a form.
