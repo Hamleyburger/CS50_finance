@@ -5,6 +5,12 @@ The version that will be running from a remote server for accessing from my port
 This version is the master version. That mostly means that there are some slight changes in the config file. The database is named differently, the config file is named differently, the config file is kept private (not committed to git) in the
 master version, and the secret keys are different.
 
+____________________________________________________________________________________
+
+An assignment for the web track in CS50 Introduction to Computer Science. Assignment specification:  https://cs50.harvard.edu/x/2020/tracks/web/finance/ - On top of completing the assignment I'll use Sqlite3 (instead of using the CS50 SQL library provided in the distribution code) for handling the database and allow the app to run on a remote server. I am also adding a bit of extra styling and funcitonality - I wanted to use the opportunity to get acquainted with SQLAlchemy, WTForms (and with this some amount of object oriented programming)), package structure and blueprints. I also got a much better understanding on the use of git/GitHub, using a bash shell, pip and the use of a virtual environment.
+
+____________________________________________________________________________________
+
 
 This was the assignment specification:
 link: https://cs50.harvard.edu/x/2020/tracks/web/finance/
