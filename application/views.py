@@ -81,8 +81,16 @@ def logout():
 @login_required
 def buy():
 
-    form = BuyForm()
+    user = User.get(user_id=session["user_id"])
+    stock = None
     setSessionStock("buystock")
+
+    if "symbol" in session["buystock"]:
+        stock = Stock.get(session["buystock"]["symbol"])
+        print("stock set to: {}".format(stock.name))
+    
+    # Stock will be None unless search has been made. But user won't get option to do anything with stock unless there's been a search.
+    form = BuyForm(user=user, stock=stock)
 
     if request.method == "POST":
 
@@ -136,7 +144,7 @@ def sell(symbol=None):
 
                 # If method wasn't POST it's get:
                 return render_template("/sellform.html", stock=stock, form=form)
-                
+
         # IF there was a symbol but we didn't find it in our "owned" list:
         return redirect(url_for("sell"))
 
