@@ -1,7 +1,7 @@
 from tempfile import mkdtemp
 
 class Config(object):
-    DEBUG=1
+    DEBUG=0
 	# intercepting redirects can be set to true for debugging in browser at runtime
     DEBUG_TB_INTERCEPT_REDIRECTS = False
     SECRET_KEY="thiskeyissecret&/&y&767U&&7867"
