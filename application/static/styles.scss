@@ -89,11 +89,13 @@ main img {
             top: 50%;
             transform: translate(-50%, -50%);
             z-index: -1;
+            transition: background-color .3s ease-out
         }
     }
 
     .selectable:hover .selectable-highlight {
     background-color: rgba(133, 251, 255, 0.301);
+    transition: background-color .3s ease-in
     }
 
 }
