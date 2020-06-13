@@ -4,18 +4,28 @@
 <div>
     <span>Buy a stock from the <a href="https://www.advfn.com/nasdaq/nasdaq.asp" target="_blank">NASDAQ index</a>. Like
         TSLA, NFLX, GOOG, DDD, STX, CCC, SBUX, FOSL... To mention a few. </span><br><br>
-    <form action="/buy" method="post">
+    <form action="" method="post">
+        {{ form.hidden_tag() }}
         <! –– search bar ––>
             <div class="input-group">
-                <input id="symbolInput" type="text" class="form-control" placeholder="Stock symbol" name="symbol"
-                    autofocus autocomplete="off" />
+                {% if form.search.errors %}
+                {{ form.search(class="form-control is-invalid", autocomplete="off", autofocus=true) }}
                 <div class="input-group-append">
                     <! -- search button -->
-                        <button id="symbolBtn" class="mybtn btn btn-outline-secondary" type="submit"
-                            name="submit-button" value="search">
-                            <i class="fas fa-search"></i>
-                        </button>
+                        {{ form.search_button(class="mybtn btn btn-outline-secondary fa-text", style="border-radius: 0.25rem;", type="submit", value="&#xf002;"|safe) }}
                 </div>
+                <div class="invalid-feedback" style="text-align: left;">
+                    {% for error in form.search.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.search(class="form-control", autocomplete="off", autofocus=true) }}
+                <div class="input-group-append">
+                    <! -- search button -->
+                        {{ form.search_button(class="mybtn btn btn-outline-secondary fa-text", autocomplete="off", type="submit", value="&#xf002;"|safe, style="border-radius: 0.25rem;") }}
+                </div>
+                {% endif %}
             </div>
             <! -- end of searchbar -->
 
@@ -49,26 +59,40 @@
                 justify-content: flex-end;
                 align-items: center;
               ">
+                                        <!--Price to the left of input field-->
                                         <span>
-                                            <strong>{{ buyDict["price"] }}
+                                            <strong>{{"$%.2f"|format(buyDict["price"]) }}
                                                 <span class="text-muted" style="padding-right: 4px;">x</span></strong>
                                         </span>
-
+                                        {% if form.shares.errors %}
                                         <div class="input-group float-right" style="max-width: 100px;">
-                                            <input id="amountInput" class="form-control" type="number" step="1" max="99"
-                                                min="1" value="{{ session['buystock']['amount'] }}" title="Qty" size="4"
-                                                name="shares" style="width: 58px;" />
+                                            {{ form.shares(class="form-control is-invalid", autocomplete="off", autofocus=true, value=session['buystock']['amount'], size="4") }}
                                             <div class="input-group-append">
-                                                <! -- refresh button -->
-                                                    <button id="amountBtn" type="submit" name="submit-button"
-                                                        value="refresh" class="mybtn btn btn-outline-secondary">
-                                                        <i class="fas fa-sync-alt"></i>
-                                                    </button>
+                                                <!-- refresh button -->
+                                                {{ form.shares_button(class="mybtn btn btn-outline-secondary fa-text", value="&#xf2f1;"|safe, style="border-radius: 0.25rem;") }}
                                             </div>
                                         </div>
+                                        {% else %}
+                                        <!--Number input field for refresh button-->
+                                        <div class="input-group float-right" style="max-width: 100px;">
+                                            {{ form.shares(class="form-control", autocomplete="off", autofocus=true, value=session['buystock']['amount'], size="4") }}
+                                            <div class="input-group-append">
+                                                <!-- refresh button -->
+                                                {{ form.shares_button(class="mybtn btn btn-outline-secondary fa-text", value="&#xf2f1;"|safe, style="border-radius: 0.25rem;") }}
+                                            </div>
+                                        </div>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
+                            {% if form.shares.errors %}
+                            <div class="feedback"
+                                style="text-align: right; margin-right: -12px; color: #dc3545; font-size: 80%;">
+
+                                <span>{{ form.shares.errors[0] }}</span>
+
+                            </div>
+                            {% endif %}
                         </div>
                         <hr />
                         <!-- END PRODUCT -->
@@ -76,14 +100,12 @@
                     <div class="card-footer">
                         <div class="pull-right" style="margin: 10px;">
                             <! -- buy button -->
-                                <button class="mybtn btn btn-primary" type="submit" name="submit-button" value="buy">
-                                    Buy
-                                </button>
+                                {{ form.submit_button(class="mybtn btn btn-primary") }}
                                 <div class="pull-right" style="margin: 5px;">
                                     Total price:
                                     <b>
-                                        {% if "buytotal" in buyDict %} {{
-            "$%.2f"|format(buyDict["buytotal"]) }} {% endif %}
+                                        {% if "total" in buyDict %} {{
+            "$%.2f"|format(buyDict["total"]) }} {% endif %}
                                     </b>
                                 </div>
                         </div>

@@ -2,8 +2,8 @@ from application import app
 from flask import session, request, redirect, render_template, flash, jsonify, url_for
 from .helpers import login_required, apology, lookup, usd, \
     setSessionStock, clearSessionExcept
-from .models import User
-from .forms import RegistrationForm, LoginForm
+from .models import User, Stock
+from .forms import RegistrationForm, LoginForm, BuyForm, SellForm
 from werkzeug.exceptions import default_exceptions, HTTPException, \
     InternalServerError
 
@@ -26,7 +26,7 @@ def index():
     """Show portfolio of stocks"""
     return redirect(url_for("sell"))
 
-
+"""
 @app.route("/buy", methods=["GET", "POST"])
 @login_required
 def buy():
@@ -49,23 +49,26 @@ def buy():
 
             if lookup(symbol):
                 # Refresh stock info and reset amount if new symbol/stock search
+
                 setSessionStock("buystock", symbol=symbol)
-            else:
-                flash(u"Invalid stock symbol", "danger")
+            except Exception as e:
+                flash(u"{}".format(e), "danger")
+
 
         # REFRESH
         elif action == "refresh":
             # User refreshed amount. Refresh total if amount > 0. Else
             amount = int(request.form.get("shares"))
-            if amount > 0:
-                setSessionStock("buystock", amount=amount)
-            else:
-                flash(u"You must input an amount higher than 0", "danger")
+            try:
+                setSessionStock("buystock", session["buystock"]["symbol"], amount=amount)
+            except Exception as e:
+                flash(u"{}".format(e), "danger")
 
         # BUY
         else:
             # User decided to buy a stock. Buy and reset "buystock" in session
-            if user.buy(session["buystock"]["symbol"], session["buystock"]["amount"]):
+            try:
+                user.buy(session["buystock"]["symbol"], session["buystock"]["amount"])
                 flash(u"Purhased {} {}".format(
                     session["buystock"]["amount"], session["buystock"]["name"]), "success")
 
@@ -73,12 +76,13 @@ def buy():
 
                 session["buystock"] = {}
                 session["cash"] = user.cash
-            else:
-                flash("Something went wrong")
+            except Exception as e:
+                flash(f"{e}", "danger")
 
         # Refresh total (amount is handled )
+        print("refresh total")
         if ("price" in session["buystock"]) and ("amount" in session["buystock"]):
-            session["buystock"]["buytotal"] = float(
+            session["buystock"]["total"] = float(
                 session["buystock"]["amount"]) * float(session["buystock"]["price"])
 
         return redirect(request.url)
@@ -86,6 +90,23 @@ def buy():
     # method is get
     else:
         return render_template("/buy.html")
+"""
+
+@app.route("/buy", methods=["GET", "POST"])
+@login_required
+def buy():
+
+    form = BuyForm()
+    setSessionStock("buystock")
+
+    if request.method == "POST":
+
+        if form.validate_on_submit():
+            return redirect(url_for("buy"))
+
+        print(form.errors)
+
+    return render_template("/buy.html", form=form)
 
 
 @app.route("/history")
@@ -166,68 +187,13 @@ def login():
     return render_template("login.html", form=form)
 
 
-"""
-@app.route("/sell", methods=["GET", "POST"])
-@login_required
-def sell():
-    #Sell shares of stock
-
-    if request.method == "POST":
-
-        user = User.query.filter_by(id=session["user_id"]).first_or_404()
-        # action can be search, refresh (amount) or sell
-        action = request.form.get("submit-button")
-        # setSessionStock initiates or refreshes session stock info
-        setSessionStock("sellstock")
-
-        # SEARCH
-        if action == "search":
-
-            symbol = request.form.get("symbol")
-            if lookup(symbol):
-                # Refresh stock info and reset amount if new symbol/stock search
-                setSessionStock("sellstock", symbol=symbol)
-            else:
-                flash(u"Invalid stock symbol", "danger")
-
-        # REFRESH
-        elif action == "refresh":
-            # User refreshed amount. Refresh total if amount > 0. Else
-            amount = int(request.form.get("shares"))
-            if amount > 0:
-                setSessionStock("sellstock", amount=amount)
-            else:
-                flash(u"You must input an amount higher than 0", "danger")
-
-        # SELL
-        else:
-            # User decided to sell a stock. Sell and reset "sellstock" in session
-            if user.sell(session["sellstock"]["symbol"], session["sellstock"]["amount"]):
-
-                session["sellstock"] = {}
-                session["cash"] = user.cash
-            else:
-                flash("Something went wrong")
-
-        # Refresh total (amount is handled )
-        if ("price" in session["sellstock"]) and ("amount" in session["sellstock"]):
-            session["sellstock"]["selltotal"] = float(
-                session["sellstock"]["amount"]) * float(session["sellstock"]["price"])
-
-        return redirect(request.url)
-
-    # method is get
-    else:
-        return render_template("/sell.html")
-"""
-
 @app.route("/sell", methods=["GET"])
 @app.route("/sell/<symbol>", methods=["GET", "POST"])
 @login_required
 #@login_required
 def sell(symbol=None):
 
-    """Sell shares of stock"""
+    #Sell shares of stock
     user = User.query.filter_by(id=session["user_id"]).first_or_404()
     stocks = user.ownedStocks()
 
@@ -246,7 +212,7 @@ def sell(symbol=None):
             if symbol.upper() == stock.symbol.upper():
                 # Update "sellstock" and offer to sell
                 setSessionStock("sellstock", symbol=symbol)
-                session["sellstock"]["selltotal"] = float(
+                session["sellstock"]["total"] = float(
                 session["sellstock"]["amount"]) * float(session["sellstock"]["price"])
 
                 # GET offers to sell, POST sells and redirects
@@ -264,6 +230,7 @@ def sell(symbol=None):
                             setSessionStock("sellstock", amount=amount)
                     else:
                         # Sell stock of given amount
+
                         user.sell(stock.symbol, session["sellstock"]["amount"])
 
                         print("*********User is selling {} {}".format(stock.symbol, session["sellstock"]["amount"]))
@@ -275,13 +242,55 @@ def sell(symbol=None):
                     return redirect(request.url)
 
         return redirect(url_for("sell"))
+"""
 
+@app.route("/sell", methods=["GET"])
+@app.route("/sell/<symbol>", methods=["GET", "POST"])
+@login_required
+#@login_required
+def sell(symbol=None):
 
+    """Sell shares of stock"""
+    user = User.query.filter_by(id=session["user_id"]).first_or_404()
+    stocks = user.ownedStocks()
 
+    if not symbol:
+        # Show a list where user can click and choose symbol form its own collection
 
+        # calculate grad total of shares + cash
+        grand_total = 0.0
+        for stock in stocks:
+            grand_total += float(stock.price * stock.amount)
+        grand_total += float(user.cash)
 
+        return render_template("/sell.html", stocks=stocks, grand_total=grand_total)
 
+    else:
+        # There's a symbol. Render a form for interacting with symbol.
+        # Check that symbol is in user's owned list
+        for stock in stocks:
+            if symbol.upper() == stock.symbol.upper():
+                # Update "sellstock" and offer to sell
+                setSessionStock("sellstock", symbol=symbol)
 
+                form = SellForm(user=user, stock=stock)
+                print(form)
+                print(session)
+
+                # GET offers to sell, POST sells and redirects
+                if request.method == "GET":
+                    return render_template("/hellform.html", stock=stock, form=form)
+                elif request.method == "POST":
+
+                    if form.validate_on_submit():
+                        # Each button in form has a validator that refreshes or sells.
+                        return redirect(request.url)
+
+                    # form couldn't validate
+                    print(form.errors)
+                    return redirect(request.url)
+
+        return redirect(url_for("sell"))
 
 
 def errorhandler(e):

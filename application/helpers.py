@@ -8,6 +8,7 @@ import datetime
 
 from flask import redirect, render_template, request, session, flash
 from functools import wraps
+from .exceptions import invalidSymbolError, zeroTransactionError
 
 
 def apology(message, code=400):
@@ -87,35 +88,52 @@ def setSessionStock(keyString, symbol=None, amount=None):
     """ keyString is required: The key for the session entry for stock info.\n
     symbol is optional: if passed in session is repopulated\n
     amount is optional: if passed in amount of stock in question is changed. """
-
     if keyString not in session:
         # if key not in session, make it exist to be searchable
         session[keyString] = {}
-        session[keyString]["amount"] = 1
+        session[keyString]["amount"] = int(1)
     if symbol:
-        if lookup(symbol):
-            if "symbol" in session[keyString]:
-                if session[keyString]["symbol"].lower() != symbol.lower():
-                    # if it's a different symbol from before, amount is 1
-                    amount = 1
-            else:
-                amount = 1
+        oldsymbol = ""
+        if "symbol" in session[keyString]:
+            oldsymbol = session[keyString]["symbol"]
+        try:
+            lookupRepopulate(session[keyString], symbol)
+            if oldsymbol.lower() != symbol.lower():
+                # if it's a different symbol from before, amount is 1
+                amount = int(1)
+        except invalidSymbolError:
+            raise
 
-        # try to refresh session with new data from lookup
-        lookupRepopulate(session[keyString], symbol)
     # No symbol was passed in. Refresh currect info if exists
     elif "symbol" in session[keyString]:
         symbol = session[keyString]["symbol"]
-        lookupRepopulate(session[keyString], symbol)
 
-    if amount:
-        session[keyString]["amount"] = amount
+        try:
+            lookupRepopulate(session[keyString], symbol)
+        except invalidSymbolError:
+            print("Invalid symbol has somehow entered database")
+            raise
+
+    if amount is not None:
+        if amount > 0:
+            session[keyString]["amount"] = int(amount)
+        else:
+            raise zeroTransactionError
+    # Refresh total ( amount is handled )
+    if ("price" in session[keyString]) and ("amount" in session[keyString]):
+        print("refresh total from helpers")
+        session[keyString]["total"] = float(
+            session[keyString]["amount"]) * float(session[keyString]["price"])
 
 
 def lookupRepopulate(receivingDict, symbol):
     # repopulates keys returned from lookup and leaves the rest be
-    if lookup(symbol):
-        for newKey, newValue in lookup(symbol).items():
+    dict = lookup(symbol)
+    if dict:
+        for newKey, newValue in dict.items():
             receivingDict[newKey] = newValue
+
+            if newKey == "price":
+                print("price in lookup repop: {}".format(newValue))
     else:
-        flash(u"Could not find stock symbol in database", "danger")
+        raise invalidSymbolError
