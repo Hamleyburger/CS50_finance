@@ -106,8 +106,7 @@ def sell(symbol=None):
 
     if not symbol:
         # Show a list where user can click and choose symbol form its own collection
-
-        # calculate grad total of shares + cash
+        # calculate grand total of shares + cash
         grand_total = 0.0
         for stock in stocks:
             grand_total += float(stock.price * stock.amount)
@@ -116,21 +115,16 @@ def sell(symbol=None):
         return render_template("/sell.html", stocks=stocks, grand_total=grand_total)
 
     else:
-        # There's a symbol. Render a form for interacting with symbol.
-        # Check that symbol is in user's owned list
+        # There's a symbol. Render a form for interacting with symbol if it exists in "owned list"
         for stock in stocks:
             if symbol.upper() == stock.symbol.upper():
-                # Update "sellstock" and offer to sell
+                # Update "sellstock" dict (containing temporary info about the stock in question)
                 setSessionStock("sellstock", symbol=symbol)
                 
                 form = SellForm(user=user, stock=stock)
-                print(form)
-                print(session)
 
-                # GET offers to sell, POST sells and redirects
-                if request.method == "GET":
-                    return render_template("/sellform.html", stock=stock, form=form)
-                elif request.method == "POST":
+                # if POST user clicked either refresh or sell. Forms.py deals with it in validators.
+                if request.method == "POST":
 
                     if form.validate_on_submit():
                         # Each button in form has a validator that refreshes or sells.
@@ -140,6 +134,10 @@ def sell(symbol=None):
                     print(form.errors)
                     return render_template("sellform.html", stock=stock, form=form)
 
+                # If method wasn't POST it's get:
+                return render_template("/sellform.html", stock=stock, form=form)
+                
+        # IF there was a symbol but we didn't find it in our "owned" list:
         return redirect(url_for("sell"))
 
 
