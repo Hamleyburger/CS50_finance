@@ -99,10 +99,14 @@ main img {
   -webkit-transform: translate(-50%, -50%);
           transform: translate(-50%, -50%);
   z-index: -1;
+  -webkit-transition: background-color .3s ease-out;
+  transition: background-color .3s ease-out;
 }
 
 .product-container .selectable:hover .selectable-highlight {
   background-color: rgba(133, 251, 255, 0.301);
+  -webkit-transition: background-color .3s ease-in;
+  transition: background-color .3s ease-in;
 }
 
 .mybtn {
