@@ -48,9 +48,14 @@ class User(db.Model):
             raise
 
     @classmethod
-    def get(cls, username):
+    def get(cls, username=None, user_id=None):
         """This method returns user if exists, otherwise None"""
-        user = cls.query.filter_by(username=username).first()
+        if username:
+            print("models given username")
+            user = cls.query.filter_by(username=username).first()
+        elif user_id:
+            print("models given user id")
+            user = cls.query.filter_by(id=user_id).first()
         return user
 
     @classmethod

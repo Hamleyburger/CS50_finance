@@ -107,6 +107,12 @@ class BuyForm(FlaskForm):
     shares_button = SubmitField("Refresh", id="amountBtn")
     submit_button = SubmitField("Buy", validators=[allowBuy])
 
+    def __init__(self, user, stock, *args, **kwargs):
+        super(BuyForm, self).__init__(*args, **kwargs)
+        self.user = user
+        self.stock = stock
+        print("initiated and set user to {}".format(user.username))
+
 
 def validSellAmount(form, field):
 
