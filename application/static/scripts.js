@@ -94,22 +94,8 @@ function validateLogin(form) {
 }
 
 
-$(function () {
-/** This function makes enter key trigger the correct
- * server actions when both "symbol search" and "amount
- * refresh" inputs/buttons are present. */
-    $("#amountInput").keypress(function (e) {
-        if (e.keyCode === 13) {
-            $('#amountBtn').click();
-            console.log("you pressed enter in amount");
-            return false;
-        }
-    });
-    $("#symbolInput").keypress(function (e) {
-        if (e.keyCode === 13) {
-            $('#symbolBtn').click();
-            console.log("you pressed enter in symbol");
-            return false;
-        }
-    });
-});
+
+
+
+
+
