@@ -4,7 +4,7 @@
 <div>
     <span>Buy a stock from the <a href="https://www.advfn.com/nasdaq/nasdaq.asp" target="_blank">NASDAQ index</a>. Like
         TSLA, NFLX, GOOG, DDD, STX, CCC, SBUX, FOSL... To mention a few. </span><br><br>
-    <form action="" method="post">
+    <form action="" method="post" onsubmit="return validateBuy(this);">
         {{ form.hidden_tag() }}
         <! –– search bar ––>
             <div class="input-group">
@@ -12,7 +12,7 @@
                 {{ form.search(class="form-control is-invalid", autocomplete="off", autofocus=true) }}
                 <div class="input-group-append">
                     <! -- search button -->
-                        {{ form.search_button(class="mybtn btn btn-outline-secondary fa-text", style="border-radius: 0.25rem;", type="submit", value="&#xf002;"|safe) }}
+                        {{ form.search_button(id="search_button", class="mybtn btn btn-outline-secondary fa-text", style="border-radius: 0.25rem;", value="&#xf002;"|safe) }}
                 </div>
                 <div class="invalid-feedback" style="text-align: left;">
                     {% for error in form.search.errors %}
@@ -23,18 +23,28 @@
                 {{ form.search(class="form-control", autocomplete="off", autofocus=true) }}
                 <div class="input-group-append">
                     <! -- search button -->
-                        {{ form.search_button(class="mybtn btn btn-outline-secondary fa-text", autocomplete="off", type="submit", value="&#xf002;"|safe, style="border-radius: 0.25rem;") }}
+                        {{ form.search_button(class="mybtn btn btn-outline-secondary fa-text", autocomplete="off", value="&#xf002;"|safe, style="border-radius: 0.25rem;") }}
                 </div>
                 {% endif %}
             </div>
             <! -- end of searchbar -->
+                <div id="searchfeedback" class="feedback" style="text-align: left; color: #dc3545; font-size: 80%;">
+                    <span></span>
+                </div>
 
                 <! -- product containter, only shows if there's a valid stock in flask session -->
                     {% if ("buystock" not in session) %}
                     <!-- User still hasn't posted anything. -->
+                    <script>
+                        var price = null;
+                    </script>
                     {% elif "symbol" in session["buystock"] %}
                     <!-- User has searched for a valid stock. -->
                     {% set buyDict = session["buystock"] %}
+                    <script>
+                        var price = '{{ buyDict.price }}';
+                    </script>
+
                     <!-- buyDict is the dictionary with stock information. -->
                     <div class="container-fluid product-container">
                         <!-- PRODUCT -->
@@ -61,7 +71,7 @@
               ">
                                         <!--Price to the left of input field-->
                                         <span>
-                                            <strong>{{"$%.2f"|format(buyDict["price"]) }}
+                                            <strong id="pricePrUnit">{{"$%.2f"|format(buyDict["price"]) }}
                                                 <span class="text-muted" style="padding-right: 4px;">x</span></strong>
                                         </span>
                                         {% if form.shares.errors %}
@@ -94,13 +104,17 @@
                             </div>
                             {% endif %}
                         </div>
+                        <div id="sharesfeedback" class="feedback"
+                            style="text-align: right; color: #dc3545; font-size: 80%;">
+                            <span></span>
+                        </div>
                         <hr />
                         <!-- END PRODUCT -->
                     </div>
                     <div class="card-footer">
                         <div class="pull-right" style="margin: 10px;">
                             <! -- buy button -->
-                                {{ form.submit_button(class="mybtn btn btn-primary") }}
+                                {{ form.buy_button(class="mybtn btn btn-primary") }}
                                 <div class="pull-right" style="margin: 5px;">
                                     Total price:
                                     <b>
@@ -114,6 +128,87 @@
                     {% endif %}
     </form>
 </div>
+
+
+
+<script>
+    $(document).ready(function () {
+        $(window).keydown(function (event) {
+            if (event.keyCode == 13) {
+                event.preventDefault();
+            }
+        });
+    });
+
+    var sharesInput = document.getElementById("amountInput");
+    var searchInput = document.getElementById("symbolInput");
+    var clickedSearch = false;
+    var clickedShares = false;
+    var clickedBuy = false;
+    console.log("script reset");
+    var serverAmount = '{{ 0 if (buyDict == None) else buyDict["amount"] }}'
+    console.log(serverAmount);
+
+    document.getElementById('search_button').onclick = function () {
+        clickedSearch = true;
+    };
+
+    document.getElementById('shares_button').onclick = function () {
+        clickedShares = true;
+    };
+
+    document.getElementById('buy_button').onclick = function () {
+        clickedBuy = true;
+    };
+
+    // Execute a functions when the user releases a key on the keyboard
+    searchInput.addEventListener("keyup", function (event) {
+        if (event.keyCode === 13) {
+            document.getElementById("search_button").click();
+        }
+    });
+
+    sharesInput.addEventListener("keyup", function (event) {
+        if (event.keyCode === 13) {
+            document.getElementById("shares_button").click();
+        }
+    });
+
+
+    function validateBuy(form) {
+
+        if (clickedSearch == true) {
+
+            clickedSearch = false;
+            if (searchInput.value === "") {
+                document.getElementById('searchfeedback').innerHTML = "Search field empty";
+                return false;
+            }
+        }
+
+
+        if (clickedShares === true || clickedBuy === true) {
+
+            clickedShares = false;
+            clickedBuy = false;
+
+            if (sharesInput.value < 1) {
+                document.getElementById('sharesfeedback').innerHTML = "You can't buy less than one";
+                sharesInput.value = serverAmount;
+                return false;
+            }
+            else if ((sharesInput.value * +price > +'{{ session.cash }}')) {
+                console.log("total exceeds cash");
+                document.getElementById('sharesfeedback').innerHTML = "Can't afford";
+                sharesInput.value = serverAmount;
+                return false;
+            }
+
+        }
+        return true;
+    }
+
+</script>
 
 
 {% endblock %}

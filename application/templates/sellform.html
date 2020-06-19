@@ -10,7 +10,7 @@
     {% set sellDict = session["sellstock"] %}
     <!-- sellDict is the dictionary with stock information. -->
     <div>
-        <form method="post">
+        <form method="post" onsubmit="return validateSell(this);">
             {{ form.hidden_tag() }}
             <div class="container-fluid product-container">
                 <!-- PRODUCT -->
@@ -56,13 +56,13 @@
                             </div>
                         </div>
                     </div>
-                    {% if form.shares.errors %}
-                    <div class="feedback"
+                    <div id="sharesfeedback" class="feedback"
                         style="text-align: right; margin-right: -12px; color: #dc3545; font-size: 80%;">
+                        {% if form.shares.errors %}
                         <span>{{ form.shares.errors[0] }}</span>
+                        {% endif %}
 
                     </div>
-                    {% endif %}
                 </div>
                 <hr />
                 <div class="row footnote">
@@ -76,7 +76,7 @@
             <div class="card-footer">
                 <div class="pull-right" style="margin: 10px;">
                     <!-- SELL BUTTON -->
-                    {{ form.submit_button(class="mybtn btn btn-primary") }}
+                    {{ form.sell_button(class="mybtn btn btn-primary") }}
                     <div class="pull-right" style="margin: 5px;">
                         Total price:
                         <b>
@@ -90,5 +90,71 @@
             {% endif %}
         </form>
     </div>
+
+
+
+
+
+
+
+    <script>
+        $(document).ready(function () {
+            $(window).keydown(function (event) {
+                if (event.keyCode == 13) {
+                    event.preventDefault();
+                }
+            });
+        });
+
+        var sharesInput = document.getElementById("shares");
+        var clickedShares = false;
+        var clickedSell = false;
+        console.log("script reset");
+        var owned = '{{ 0 if (stock.amount == None) else stock.amount }}'
+        var serverAmount = '{{0 if (session["sellstock"]["amount"] == None) else session["sellstock"]["amount"] }}'
+        console.log(serverAmount);
+
+
+        document.getElementById('shares_button').onclick = function () {
+            clickedShares = true;
+        };
+
+        document.getElementById('sell_button').onclick = function () {
+            clickedSell = true;
+        };
+
+        // Execute a functions when the user releases a key on the keyboard
+        sharesInput.addEventListener("keyup", function (event) {
+            if (event.keyCode === 13) {
+                document.getElementById("shares_button").click();
+            }
+        });
+
+
+        function validateSell(form) {
+
+            if (clickedShares === true || clickedSell === true) {
+
+                clickedShares = false;
+                clickedBuy = false;
+
+                if (sharesInput.value < 1) {
+                    document.getElementById('sharesfeedback').innerHTML = "You can't sell less than one";
+                    sharesInput.value = serverAmount;
+                    return false;
+                }
+                else if ((sharesInput.value > +owned)) {
+                    document.getElementById('sharesfeedback').innerHTML = "Don't own enough";
+                    sharesInput.value = serverAmount;
+                    return false;
+                }
+
+            }
+            return true;
+        }
+
+    </script>
+
+
 
     {% endblock %}
