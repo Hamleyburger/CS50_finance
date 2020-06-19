@@ -145,34 +145,44 @@
     var clickedSearch = false;
     var clickedShares = false;
     var clickedBuy = false;
-    console.log("script reset");
-    var serverAmount = '{{ 0 if (buyDict == None) else buyDict["amount"] }}'
-    console.log(serverAmount);
+    var serverAmount = '{{ 0 if buyDict is not defined else buyDict["amount"] }}';
+
 
     document.getElementById('search_button').onclick = function () {
         clickedSearch = true;
     };
 
-    document.getElementById('shares_button').onclick = function () {
-        clickedShares = true;
-    };
-
-    document.getElementById('buy_button').onclick = function () {
-        clickedBuy = true;
-    };
-
     // Execute a functions when the user releases a key on the keyboard
     searchInput.addEventListener("keyup", function (event) {
         if (event.keyCode === 13) {
+            console.log("enter key pressed in search");
             document.getElementById("search_button").click();
         }
     });
 
-    sharesInput.addEventListener("keyup", function (event) {
-        if (event.keyCode === 13) {
-            document.getElementById("shares_button").click();
-        }
-    });
+    // This part only applies when product has been loaded and thus the "shares" button exists
+    exists = document.getElementById('shares_button');
+    if (exists) {
+
+        document.getElementById('shares_button').onclick = function () {
+            clickedShares = true;
+        };
+
+        document.getElementById('buy_button').onclick = function () {
+            clickedBuy = true;
+        };
+
+        // Execute a functions when the user releases a key on the keyboard
+        sharesInput.addEventListener("keyup", function (event) {
+            if (event.keyCode === 13) {
+                document.getElementById("shares_button").click();
+            }
+        });
+
+    }
+
+
+
 
 
     function validateBuy(form) {
@@ -186,25 +196,29 @@
             }
         }
 
+        // Again this piece of the function only runs when product is loaded ( shares button exists )
+        if (exists) {
 
-        if (clickedShares === true || clickedBuy === true) {
+            if (clickedShares === true || clickedBuy === true) {
 
-            clickedShares = false;
-            clickedBuy = false;
+                clickedShares = false;
+                clickedBuy = false;
 
-            if (sharesInput.value < 1) {
-                document.getElementById('sharesfeedback').innerHTML = "You can't buy less than one";
-                sharesInput.value = serverAmount;
-                return false;
+                if (sharesInput.value < 1) {
+                    document.getElementById('sharesfeedback').innerHTML = "You can't buy less than one";
+                    sharesInput.value = serverAmount;
+                    return false;
+                }
+                else if ((sharesInput.value * +price > +'{{ session.cash }}')) {
+                    console.log("total exceeds cash");
+                    document.getElementById('sharesfeedback').innerHTML = "Can't afford";
+                    sharesInput.value = serverAmount;
+                    return false;
+                }
+
             }
-            else if ((sharesInput.value * +price > +'{{ session.cash }}')) {
-                console.log("total exceeds cash");
-                document.getElementById('sharesfeedback').innerHTML = "Can't afford";
-                sharesInput.value = serverAmount;
-                return false;
-            }
-
         }
+
         return true;
     }
 
