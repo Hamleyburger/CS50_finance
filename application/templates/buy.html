@@ -76,7 +76,7 @@
                                         </span>
                                         {% if form.shares.errors %}
                                         <div class="input-group float-right" style="max-width: 100px;">
-                                            {{ form.shares(class="form-control is-invalid", autocomplete="off", autofocus=true, value=session['buystock']['amount'], size="4") }}
+                                            {{ form.shares(class="form-control is-invalid", autocomplete="off", autofocus=true, value=session['buystock']['amount'], size="4", type="number") }}
                                             <div class="input-group-append">
                                                 <!-- refresh button -->
                                                 {{ form.shares_button(class="mybtn btn btn-outline-secondary fa-text", value="&#xf2f1;"|safe, style="border-radius: 0.25rem;") }}
@@ -85,7 +85,7 @@
                                         {% else %}
                                         <!--Number input field for refresh button-->
                                         <div class="input-group float-right" style="max-width: 100px;">
-                                            {{ form.shares(class="form-control", autocomplete="off", autofocus=true, value=session['buystock']['amount'], size="4") }}
+                                            {{ form.shares(class="form-control", autocomplete="off", autofocus=true, value=session['buystock']['amount'], size="4", type="number") }}
                                             <div class="input-group-append">
                                                 <!-- refresh button -->
                                                 {{ form.shares_button(class="mybtn btn btn-outline-secondary fa-text", value="&#xf2f1;"|safe, style="border-radius: 0.25rem;") }}
@@ -130,95 +130,72 @@
 </div>
 
 
-
 <script>
-    $(document).ready(function () {
-        $(window).keydown(function (event) {
-            if (event.keyCode == 13) {
-                event.preventDefault();
-            }
-        });
-    });
 
-    var sharesInput = document.getElementById("amountInput");
-    var searchInput = document.getElementById("symbolInput");
     var clickedSearch = false;
     var clickedShares = false;
     var clickedBuy = false;
     var serverAmount = '{{ 0 if buyDict is not defined else buyDict["amount"] }}';
 
 
-    document.getElementById('search_button').onclick = function () {
+    // Keep track of what button was clicked so validateBuy can validate correctly
+    $("#search_button").click(function () {
         clickedSearch = true;
-    };
+    });
 
-    // Execute a functions when the user releases a key on the keyboard
-    searchInput.addEventListener("keyup", function (event) {
-        if (event.keyCode === 13) {
-            console.log("enter key pressed in search");
-            document.getElementById("search_button").click();
+    $("#shares_button").click(function () {
+        clickedShares = true;
+    });
+
+    $("#buy_button").click(function () {
+        clickedBuy = true;
+    });
+
+    // Trigger click() of corresponding button if enter key is pressed in input field
+    $("#symbolInput").keydown(function (event) {
+        if (event.keyCode == 13) {
+            event.preventDefault();
+            $("#search_button").click();
         }
     });
 
-    // This part only applies when product has been loaded and thus the "shares" button exists
-    exists = document.getElementById('shares_button');
-    if (exists) {
-
-        document.getElementById('shares_button').onclick = function () {
-            clickedShares = true;
-        };
-
-        document.getElementById('buy_button').onclick = function () {
-            clickedBuy = true;
-        };
-
-        // Execute a functions when the user releases a key on the keyboard
-        sharesInput.addEventListener("keyup", function (event) {
-            if (event.keyCode === 13) {
-                document.getElementById("shares_button").click();
-            }
-        });
-
-    }
-
-
-
+    $("#amountInput").keydown(function (event) {
+        if (event.keyCode == 13) {
+            event.preventDefault();
+            $("#shares_button").click();
+        }
+    });
 
 
     function validateBuy(form) {
 
+        // Make sure user is searching for anything
         if (clickedSearch == true) {
 
             clickedSearch = false;
-            if (searchInput.value === "") {
-                document.getElementById('searchfeedback').innerHTML = "Search field empty";
+            if ($("#symbolInput").val() === "") {
+                $("#searchfeedback").html("Search field empty");
                 return false;
             }
         }
 
-        // Again this piece of the function only runs when product is loaded ( shares button exists )
-        if (exists) {
+        // Make sure user isn't trying to buy too much or too little
+        if (clickedShares === true || clickedBuy === true) {
 
-            if (clickedShares === true || clickedBuy === true) {
+            clickedShares = false;
+            clickedBuy = false;
 
-                clickedShares = false;
-                clickedBuy = false;
-
-                if (sharesInput.value < 1) {
-                    document.getElementById('sharesfeedback').innerHTML = "You can't buy less than one";
-                    sharesInput.value = serverAmount;
-                    return false;
-                }
-                else if ((sharesInput.value * +price > +'{{ session.cash }}')) {
-                    console.log("total exceeds cash");
-                    document.getElementById('sharesfeedback').innerHTML = "Can't afford";
-                    sharesInput.value = serverAmount;
-                    return false;
-                }
-
+            if ($("#amountInput").val() < 1) {
+                $("#sharesfeedback").html("You can't buy less than one");
+                $("#amountInput").val(serverAmount);
+                return false;
+            }
+            else if (($("#amountInput").val() * +price > +'{{ session.cash }}')) {
+                $("#sharesfeedback").html("You're too poor!");
+                $("#amountInput").val(serverAmount);
+                return false;
             }
         }
-
         return true;
     }
 
