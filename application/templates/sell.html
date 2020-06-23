@@ -1,6 +1,11 @@
 {% extends "layout.html" %} {% block title %} Sell {% endblock %} {% block main
 %}
 
+<div class="row"
+    style="margin: 0; padding-right: 12px; padding-top: 0; justify-content: flex-end; font-size: 130%; height: 2em;">
+    <p>Total holdings: <strong> {{"$%.2f"|format(grand_total) }}</strong></p>
+</div>
+
 <!-- product containter, only shows if there's a valid stock in flask session -->
 {% if (stocks == []) %}
 <!-- User still hasn't posted anything. -->
@@ -10,9 +15,6 @@
 <!-- User has searched for a valid stock. -->
 <!-- sellDict is the dictionary with stock information. -->
 <div class="container-fluid product-container">
-    <div class="row" style="margin: 0; padding: 12px; justify-content: flex-end; font-size: 130%;">
-        <p>Total holdings: <strong> {{"$%.2f"|format(grand_total) }}</strong></p>
-    </div>
     {% for stock in stocks %}
     <!-- PRODUCT -->
     <a class="selectable" href="{{ url_for('sell', symbol=stock.symbol) }}" style="display: block;">

@@ -50,11 +50,10 @@ class User(db.Model):
     @classmethod
     def get(cls, username=None, user_id=None):
         """This method returns user if exists, otherwise None"""
+        user = None
         if username:
-            print("models given username")
             user = cls.query.filter_by(username=username).first()
         elif user_id:
-            print("models given user id")
             user = cls.query.filter_by(id=user_id).first()
         return user
 
@@ -73,7 +72,7 @@ class User(db.Model):
                 raise invaldPasswordError("Incorrect password")
         else:
             raise userNotFoundError(f'User "{username}" not found')
-#---------------------
+
     # Methods for instantiated objects
     def ownedStocks(self):
         """
@@ -131,8 +130,8 @@ class User(db.Model):
         return False
 
     def buy(self, symbol, amount):
-        # Buy is a bool that returns true if success and false
-        # if user doesn't have enough money
+        """ Buy if user has enough money and symbol is valid """
+
         if int(amount) < 1:
             # User tried to buy less than one
             raise Exception("You can't trade less than one")
@@ -181,6 +180,7 @@ class User(db.Model):
 
         # Sort the list by time descending and return it
         return sorted(transactionHistory, key=lambda i: i['time'], reverse=True)
+
 
 class Stock(db.Model):
     __tablename__ = "stocks"
@@ -241,10 +241,9 @@ class Owned(db.Model):
         owned = cls.query.filter_by(
             user_id=user.id, stock_id=stock.id).first()
         if owned:
-            print("user already owns some amount of this")
             owned.amount += amount
         else:
-            print("User bought this for the first time.")
+            print("{} bought this for the first time.".format(user.username))
             owned = cls(user_id=user.id, stock_id=stock.id, amount=amount)
             db.session.add(owned)
         if commit:
@@ -262,8 +261,6 @@ class Owned(db.Model):
                 user.username, owned.amount, stock.name))
             if owned.amount == 0:
                 db.session.delete(owned)
-        else:
-            print("User does not own this.")
         if commit:
             db.session.commit()
 

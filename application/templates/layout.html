@@ -61,9 +61,8 @@
                 </li>
             </ul>
             <ul class="navbar-nav ml-auto mt-2">
-                <li class="nav-item mr-2">
-                    <a class="nav-link disabled" href="#">{{ session.username }} {{ "$%.2f"|format(session.cash) }}</a>
-                </li>
+
+
                 <li class="nav-item">
                     <a class="nav-link" href="/logout">Log Out</a>
                 </li>
@@ -81,7 +80,7 @@
     </nav>
 
     {% with messages = get_flashed_messages(with_categories=true) %} {% if
-    messages %}
+        messages %}
     <header>
         {% for category, message in messages %}
         <div class="alert alert-{{ category }} border text-center" role="alert">
@@ -92,6 +91,13 @@
     {% endif %} {% endwith %}
 
     <main class="container main-container">
+        {% if session.user_id %}
+        <div class="row"
+            style="margin: 0; padding-right: 12px; padding-bottom: 0; justify-content: flex-end; font-size: 130%; height: 2em;">
+            <p><span style="color: #ea433b; font-size: x-large;">{{ session.username }}</span>
+                <strong>{{ "$%.2f"|format(session.cash) }}</strong></p>
+        </div>
+        {% endif %}
         {% block main %}{% endblock %}
     </main>
 

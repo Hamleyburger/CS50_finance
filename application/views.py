@@ -66,6 +66,20 @@ def login():
     return render_template("login.html", form=form)
 
 
+@app.route("/ajax", methods=["POST"])
+# Route just for trying out AJAX - checks if user exists for quick front end feedback
+def ajax():
+    username = request.form["username"]
+    exists = False
+
+    if User.get(username):
+        exists = True
+    else:
+        exists = False
+
+    return jsonify({"exists": exists})
+
+
 @app.route("/logout")
 def logout():
     """Log user out"""
@@ -88,7 +102,7 @@ def buy():
     if "symbol" in session["buystock"]:
         stock = Stock.get(session["buystock"]["symbol"])
         print("stock set to: {}".format(stock.name))
-    
+
     # Stock will be None unless search has been made. But user won't get option to do anything with stock unless there's been a search.
     form = BuyForm(user=user, stock=stock)
 
@@ -96,7 +110,7 @@ def buy():
 
         if form.validate_on_submit():
             return redirect(url_for("buy"))
-        
+
         print(form.errors)
 
     return render_template("/buy.html", form=form)
@@ -105,7 +119,6 @@ def buy():
 @app.route("/sell", methods=["GET"])
 @app.route("/sell/<symbol>", methods=["GET", "POST"])
 @login_required
-#@login_required
 def sell(symbol=None):
 
     """Sell shares of stock"""
@@ -128,7 +141,6 @@ def sell(symbol=None):
             if symbol.upper() == stock.symbol.upper():
                 # Update "sellstock" dict (containing temporary info about the stock in question)
                 setSessionStock("sellstock", symbol=symbol)
-                
                 form = SellForm(user=user, stock=stock)
 
                 # if POST user clicked either refresh or sell. Forms.py deals with it in validators.
@@ -138,11 +150,7 @@ def sell(symbol=None):
                         # Each button in form has a validator that refreshes or sells.
                         return redirect(request.url)
 
-                    # form couldn't validate
-                    print(form.errors)
-                    return render_template("sellform.html", stock=stock, form=form)
-
-                # If method wasn't POST it's get:
+                # If method was GET or form didn't validate:
                 return render_template("/sellform.html", stock=stock, form=form)
 
         # IF there was a symbol but we didn't find it in our "owned" list:

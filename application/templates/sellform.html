@@ -109,10 +109,8 @@
         var sharesInput = document.getElementById("shares");
         var clickedShares = false;
         var clickedSell = false;
-        console.log("script reset");
-        var owned = '{{ 0 if (stock.amount == None) else stock.amount }}'
-        var serverAmount = '{{0 if (session["sellstock"]["amount"] == None) else session["sellstock"]["amount"] }}'
-        console.log(serverAmount);
+        var owned = '{{ 0 if (stock.amount == None) else stock.amount }}';
+        var serverAmount = '{{0 if (session["sellstock"]["amount"] == None) else session["sellstock"]["amount"] }}';
 
 
         document.getElementById('shares_button').onclick = function () {

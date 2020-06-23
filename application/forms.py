@@ -48,14 +48,14 @@ class LoginForm(FlaskForm):
     submit = SubmitField("Login")
 
 
+
+
+
 def validBuyAmount(form, field):
     if form.shares_button.data or form.buy_button.data:
         # User refreshed amount either buy refresh or buy btn. Refresh if > 0 and user can afford
         amount = form.shares.data
-        print(f"amount {amount}")
         user = form.user
-        print(f"user {user}")
-        print(f"stock {form.stock}")
 
         canAfford = False
 
@@ -98,7 +98,7 @@ def allowBuy(form, field):
                 user.buy(stock.symbol, session["buystock"]["amount"])
                 flash(u"Purhased {} {}".format(
                     session["buystock"]["amount"], stock.name), "success")
-                print("User bought {} {}".format(session["buystock"]["amount"], stock.name))
+                print("{} bought {} {}".format(user.username, session["buystock"]["amount"], stock.name))
                 session["buystock"] = {}
                 session["cash"] = user.cash
             except Exception as e:
@@ -117,13 +117,14 @@ class BuyForm(FlaskForm):
         super(BuyForm, self).__init__(*args, **kwargs)
         self.user = user
         self.stock = stock
-        print("initiated and set user to {}".format(user.username))
+
+
+
 
 
 def validSellAmount(form, field):
 
     if form.shares_button.data:
-        print("refresh btn pressed")
         # Refresh amount to sell
         amount = field.data
         stock = form.stock
@@ -142,9 +143,8 @@ def allowSell(form, field):
     if field.data:
         user = form.user
         stock = form.stock
-        print("allowSell recognzes {} as user".format(user.username))
         try:
-            print("User is selling {} {}".format(stock.symbol, session["sellstock"]["amount"]))
+            print("{} is selling {} {}".format(user.username, stock.symbol, session["sellstock"]["amount"]))
             user.sell(stock.symbol, session["sellstock"]["amount"])
             flash(u"Sold {} items of {}".format(session["sellstock"]["amount"], stock.name), "success")
             setSessionStock("sellstock", amount=1)
@@ -165,4 +165,3 @@ class SellForm(FlaskForm):
         super(SellForm, self).__init__(*args, **kwargs)
         self.user = user
         self.stock = stock
-        print("initiated and set user to {}".format(user))

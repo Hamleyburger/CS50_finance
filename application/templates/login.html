@@ -22,6 +22,7 @@
                     {% else %}
                     {{ form.username(class="form-control", autocomplete="off", autofocus=true, placeholder="Username") }}
                     <div id="username-feedback" class="invalid-feedback"></div>
+                    <div id="username-exists" style="color: green; display: none;"><i class="fas fa-check"></i></div>
                     {% endif %}
                 </div>
                 <div class="form-group">

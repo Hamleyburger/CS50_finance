@@ -52,8 +52,30 @@ function validateRegister(form) {
     return flag;
 }
 
+// This particular function uses ajax to quickly check that username exists!
+$("#username").blur(function(){
+        $.ajax({
+            data: {
+                username : $("#username").val()
+            },
+            url: "/ajax",
+            type: "POST",
+         
+        }).done(function(data) {
+            if (data.exists) {
+                $("#username").css("border", "1px solid #4CAF50");
+                $("#username-exists").show();
+            }
+            else {
+                $("#username").css("border", "1px solid #dc3545");
+                $("#username-exists").hide();
+            }
+        
+        });
+  }); 
 
 function validateLogin(form) {
+
 
     // Renaming vars for easier readability
     usernameElement = document.getElementById("username");
@@ -64,7 +86,7 @@ function validateLogin(form) {
     // Reset invalid values before checking
     usernameElement.classList.remove("is-invalid");
     passwordElement.classList.remove("is-invalid");
-
+    
     // flag will be false if any check fails and onsubmit will return false
     var flag = true;
 
@@ -90,7 +112,9 @@ function validateLogin(form) {
         flag = false;
     }
 
-    return flag;
+
+
+    //return flag;
 }
 
 

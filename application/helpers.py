@@ -120,7 +120,6 @@ def setSessionStock(keyString, symbol=None, amount=None):
             raise zeroTransactionError
     # Refresh total ( amount is handled )
     if ("price" in session[keyString]) and ("amount" in session[keyString]):
-        print("refresh total from helpers")
         session[keyString]["total"] = float(
             session[keyString]["amount"]) * float(session[keyString]["price"])
 
@@ -131,8 +130,5 @@ def lookupRepopulate(receivingDict, symbol):
     if dict:
         for newKey, newValue in dict.items():
             receivingDict[newKey] = newValue
-
-            if newKey == "price":
-                print("price in lookup repop: {}".format(newValue))
     else:
         raise invalidSymbolError

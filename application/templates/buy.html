@@ -132,6 +132,12 @@
 
 <script>
 
+    /*
+    This script is for validation of form inputs. The validation will run on the server in any case,
+    but if JS is enabled in the client's browser it will save the user some round trips to the server and the database.
+    In this particular file jQuery is used a lot, but similar scripts are written in other parts of the app in pure JS.
+    */
+
     var clickedSearch = false;
     var clickedShares = false;
     var clickedBuy = false;
