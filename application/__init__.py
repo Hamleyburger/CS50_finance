@@ -25,17 +25,11 @@ debugToolbar = DebugToolbarExtension(app)
 db = SQLAlchemy(app)
 
 # Views.py must be imported AFTER instantiating the app. Otherwise circular import problems
-from application import views
 
+from application.main.views import main
+from application.transactions.views import transactions
+from application.users.views import users
 
-
-
-
-
-
-
-
-
-
-
-
+app.register_blueprint(users)
+app.register_blueprint(transactions)
+app.register_blueprint(main)

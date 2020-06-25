@@ -6,38 +6,8 @@ import requests
 import urllib.parse
 import datetime
 
-from flask import redirect, render_template, request, session, flash
-from functools import wraps
-from .exceptions import invalidSymbolError, zeroTransactionError
-
-
-def apology(message, code=400):
-    """Render message as an apology to user."""
-    def escape(s):
-        """
-        Escape special characters.
-
-        https://github.com/jacebrowning/memegen#special-characters
-        """
-        for old, new in [("-", "--"), (" ", "-"), ("_", "__"), ("?", "~q"),
-                         ("%", "~p"), ("#", "~h"), ("/", "~s"), ("\"", "''")]:
-            s = s.replace(old, new)
-        return s
-    return render_template("apology.html", top=code, bottom=escape(message)), code
-
-
-def login_required(f):
-    """
-    Decorate routes to require login.
-
-    http://flask.pocoo.org/docs/1.0/patterns/viewdecorators/
-    """
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if session.get("user_id") is None:
-            return redirect("/login")
-        return f(*args, **kwargs)
-    return decorated_function
+from flask import session
+from application.exceptions import invalidSymbolError, zeroTransactionError
 
 
 # Changed lookup to also return UTC time stamp in isoformat: ["isotime"]
@@ -67,20 +37,6 @@ def lookup(symbol):
 
     except (KeyError, TypeError, ValueError):
         return None
-
-
-def usd(value):
-    """Format value as USD."""
-    return f"${value:,.2f}"
-
-
-def clearSessionExcept(*argv):
-    """ Pops any item from session that is not provided as string argument.\n
-    csrf_token must be preserved for wtforms validation to work.\n
-    _flashes must be preserved for messages to be flashed """
-    for key in list(session):
-        if key not in argv:
-            session.pop(key)
 
 
 def setSessionStock(keyString, symbol=None, amount=None):

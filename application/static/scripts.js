@@ -62,13 +62,33 @@ $("#username").blur(function(){
             type: "POST",
          
         }).done(function(data) {
+            /* with parents().length I check if element has any parent with this ID
+            because an existing username is good (green) in Login but bad (red) in register. */
+            if ($("#username").parents("#loginForm").length) {
             if (data.exists) {
-                $("#username").css("border", "1px solid #4CAF50");
-                $("#username-exists").show();
+                    $("#username").css("border", "1px solid #4CAF50");
+                    $("#username-exists").show();
+                    $("#username").removeClass("is-invalid");
+                    $("#username-feedback").html("");
+                }
+                else {
+                    $("#username").css("border", "1px solid #dc3545");
+                    $("#username-exists").hide();
+                    $("#username").addClass("is-invalid");
+                    $("#username-feedback").html("This user does not exist!");
+                }
             }
-            else {
-                $("#username").css("border", "1px solid #dc3545");
-                $("#username-exists").hide();
+            else if ($("#username").parents("#registerForm").length) {
+                if (data.exists) {
+                    $("#username").css("border", "1px solid #dc3545");
+                    $("#username").addClass("is-invalid");
+                    $("#username-feedback").html("This name is taken!");
+                }
+                else {
+                    $("#username").css("border", "1px solid #4CAF50");
+                    $("#username").removeClass("is-invalid");
+                    $("#username-feedback").html("");
+                }
             }
         
         });

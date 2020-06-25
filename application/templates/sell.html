@@ -17,7 +17,7 @@
 <div class="container-fluid product-container">
     {% for stock in stocks %}
     <!-- PRODUCT -->
-    <a class="selectable" href="{{ url_for('sell', symbol=stock.symbol) }}" style="display: block;">
+    <a class="selectable" href="{{ url_for('transactions.sell', symbol=stock.symbol) }}" style="display: block;">
         <div class="selectable-highlight"></div>
         <!-- since this div is an anchor tag it needs to be set to display: block to work as a div -->
         <div class="row pb-4 pb-md-1">
