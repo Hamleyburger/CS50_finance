@@ -2,6 +2,6 @@ config.py
 hash.py
 .vscode
 *.pyc
-venv/*
+venv/
 __pycache__*
 styles.css.map
