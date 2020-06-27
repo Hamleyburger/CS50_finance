@@ -13,7 +13,7 @@ app = Flask(__name__)
 
 
 # All configs are taken from object in config.py
-app.config.from_object("config.DevelopmentConfig")
+app.config.from_object("config.ProductionConfig")
 
 
 # Instantiate Session

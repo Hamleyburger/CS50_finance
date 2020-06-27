@@ -1,9 +1,11 @@
-"""
-This is the master version of CS50 Finance. Not CS50 IDE version.
-"""
 
-from application import app
+# A very simple Flask Hello World app for you to get started with...
 
+from flask import Flask
 
-if __name__ == "__main__":
-    app.run(debug=True)
+app = Flask(__name__)
+
+@app.route('/')
+def hello_world():
+    return 'Hello from Flask!'
+
