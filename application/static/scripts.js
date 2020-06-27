@@ -1,4 +1,5 @@
 function validateRegister(form) {
+    // TODO: Make "" not count as a failed username with ajax call
 
     // Renaming vars for easier readability
     usernameElement = document.getElementById("username");
