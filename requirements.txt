@@ -5,7 +5,7 @@ click==7.1.1
 Werkzeug==0.16.0
 requests==2.23.0
 idna==2.9
-urllib3==1.25.8
+urllib3==1.26.5
 itsdangerous==1.1.0
 Jinja2==2.11.1
 MarkupSafe==1.1.1
